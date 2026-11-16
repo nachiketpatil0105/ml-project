@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-15T18:26:23.518113+00:00",
+  "generated_at": "2026-11-16T19:09:47.223262+00:00",
   "title": "Understanding the Music Streaming Sessions mini dataset",
   "status": "computed_from_local_data",
   "scope": {
@@ -191,7 +191,7 @@
     "log": [
       {
         "name": "session_id",
-        "dtype": "str",
+        "dtype": "object",
         "missing": 0,
         "unique_values": 10000
       },
@@ -229,7 +229,7 @@
       },
       {
         "name": "track_id_clean",
-        "dtype": "str",
+        "dtype": "object",
         "missing": 0,
         "unique_values": 50704
       },
@@ -427,7 +427,7 @@
       },
       {
         "name": "date",
-        "dtype": "str",
+        "dtype": "object",
         "missing": 0,
         "unique_values": 18,
         "value_counts": [
@@ -488,11 +488,11 @@
             "count": 20
           },
           {
-            "value": "2018-06-29",
+            "value": "2018-06-30",
             "count": 20
           },
           {
-            "value": "2018-06-30",
+            "value": "2018-06-29",
             "count": 20
           },
           {
@@ -523,7 +523,7 @@
       },
       {
         "name": "context_type",
-        "dtype": "str",
+        "dtype": "object",
         "missing": 0,
         "unique_values": 6,
         "value_counts": [
@@ -555,7 +555,7 @@
       },
       {
         "name": "hist_user_behavior_reason_start",
-        "dtype": "str",
+        "dtype": "object",
         "missing": 0,
         "unique_values": 9,
         "value_counts": [
@@ -599,7 +599,7 @@
       },
       {
         "name": "hist_user_behavior_reason_end",
-        "dtype": "str",
+        "dtype": "object",
         "missing": 0,
         "unique_values": 7,
         "value_counts": [
@@ -637,7 +637,7 @@
     "track_features": [
       {
         "name": "track_id",
-        "dtype": "str",
+        "dtype": "object",
         "missing": 0,
         "unique_values": 50704
       },
@@ -883,7 +883,7 @@
       },
       {
         "name": "mode",
-        "dtype": "str",
+        "dtype": "object",
         "missing": 0,
         "unique_values": 2,
         "value_counts": [
@@ -2745,9 +2745,9 @@
     "requirements": "python/01_data_understanding/requirements.txt",
     "python_minimum": "3.10",
     "libraries": {
-      "pandas": "3.0.6",
-      "numpy": "2.5.4",
-      "matplotlib": "3.11.2"
+      "pandas": "2.3.3",
+      "numpy": "2.2.6",
+      "matplotlib": "3.10.9"
     }
   }
 }

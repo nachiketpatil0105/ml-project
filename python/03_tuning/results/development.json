@@ -937,5 +937,5 @@
   }
  ],
  "selection_rule": "Search: Optuna TPE, 40 trials per boosting library, objective = mean fold MAA of stratified session-grouped 5-fold CV. Choice: the best 5 trials are re-evaluated with 3 more repeats of 5-fold CV (15 folds); the highest mean MAA wins, configurations within 0.001 are tied and the smaller one is kept. Among libraries within 0.001, LightGBM is the primary model.",
- "seconds": 3152.416560649872
+ "seconds": 60.97499442100525
 }
