@@ -26,6 +26,13 @@
 <li>History features read only the first K rows of a session.</li>
 <li>We tried a "skip rate of each song across other sessions" feature. It did not help and would need extra care to be safe, so we dropped it.</li>
 </ul>
+<h2>Other things we tried (exploratory)</h2>
+<p>These small runs used development folds only and an earlier version of the pipeline (first half = floor(L/2)). They were done by hand and are <strong>not scripted</strong>, so the numbers are notes and cannot be re-created from the repository. They did not change the final features, except the last one, which is why the start and end reason features are kept.</p>
+<ul>
+<li>A per-song skip-rate feature (how often each song is skipped in other sessions) lowered MAA from 0.577 to 0.574 and was dropped.</li>
+<li>Features from <code>skip_1</code> and <code>skip_3</code>, and per-session changes in audio features, each changed MAA by less than 0.001 and were dropped.</li>
+<li>Removing the shares of start and end reasons lowered MAA from 0.577 to 0.560, so these features were kept.</li>
+</ul>
 <p class="source-note">Honest note: we made descriptive plots of the whole mini dataset (the Data page) before fixing the split. No model choice was made from those plots.</p>
 </main>
 </body></html>

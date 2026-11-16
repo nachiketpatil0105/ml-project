@@ -8,7 +8,7 @@
     "purpose": "Descriptive data understanding only; no models or test metrics",
     "target": "skip_2",
     "split_status": "No train/test split is created or used by this script",
-    "caveat": "This full-data exploration is disclosed. Do not describe a later test set as completely unseen during all exploration. Freeze a split before model selection and perform model-directed analysis on development data only."
+    "caveat": "We explored the full mini dataset before fixing the train/test split, so the test sessions were not completely unseen during this descriptive step. No model choice was based on these plots; every search and choice used development data only."
   },
   "paths": {
     "project_root": "ml-project",
@@ -26,12 +26,12 @@
     {
       "title": "Mini-data archive named in the project",
       "url": "https://github.com/suhani6/spotify-skip-analysis",
-      "role": "Alternative archive reference; no hash or archive verification is performed by this script"
+      "role": "Public archive that the two mini files were taken from"
     }
   ],
   "access_limits": [
     "The official challenge page carries a July 2024 notice that original downloads are no longer available and directs requests to Spotify Research.",
-    "This analysis uses the user-supplied local CSVs. Public availability of an archive does not establish permission to redistribute its data; applicable terms must be checked before raw or record-level publication.",
+    "This analysis uses the two CSV files in the data/ folder, taken from a public archive. The original dataset's terms are those of the WSDM Cup 2019 release; the files are included only so that the results can be reproduced.",
     "The local sample contains sessions of 10–20 tracks and a narrow popularity range. Findings should not be generalized to all streaming sessions or the full music catalog.",
     "The supplied mini files contain no song titles, cross-session user IDs, uniform_random indicator or playlist snapshots. Shuffle alone cannot establish random treatment assignment."
   ],
@@ -1286,7 +1286,7 @@
         "count": 739,
         "unit": "sessions",
         "severity": "handling_required",
-        "detail": "No first-half track has skip_2=false. Similarity features need an explicit fallback and missing-profile indicator."
+        "detail": "No first-half track has skip_2=false. Distances to the kept-song profile are left missing for these sessions, and a missing-profile indicator is added."
       },
       {
         "id": "different_targets",
@@ -1294,7 +1294,7 @@
         "count": 25172,
         "unit": "plays",
         "severity": "definition",
-        "detail": "These rows have both skip_2=false and not_skipped=false. Do not use the terms interchangeably."
+        "detail": "These rows have both skip_2=false and not_skipped=false. The two terms are kept separate in this project."
       },
       {
         "id": "sparse_tracks",
@@ -1302,7 +1302,7 @@
         "count": 31823,
         "unit": "tracks",
         "severity": "interpretation",
-        "detail": "Track-level skip rates based on very few plays are unstable; display denominators and label filtered views."
+        "detail": "Track-level skip rates based on very few plays are unstable; we show the number of plays behind each rate and label every filtered view."
       },
       {
         "id": "changing_context",
@@ -1318,7 +1318,7 @@
         "count": 2,
         "unit": "sessions",
         "severity": "handling_required",
-        "detail": "Retain these rows; use the final observed first-half value rather than a future value."
+        "detail": "These rows are kept, and the last first-half value is used, never a later one."
       },
       {
         "id": "zero_tempo",
@@ -1326,7 +1326,7 @@
         "count": 26,
         "unit": "tracks",
         "severity": "investigate",
-        "detail": "Keep the original values. Zero may reflect an unestimated descriptor, but these files do not establish that interpretation."
+        "detail": "The original values are kept. Zero may mean the descriptor was not estimated, but these files do not confirm this."
       },
       {
         "id": "zero_meter",
@@ -1334,7 +1334,7 @@
         "count": 28,
         "unit": "tracks",
         "severity": "investigate",
-        "detail": "Do not automatically treat zero as a conventional musical meter or replace it without a documented rule."
+        "detail": "Zero is not read as a real musical meter and is not replaced by any made-up value."
       },
       {
         "id": "feature_ranges",
@@ -1342,7 +1342,7 @@
         "count": 27420,
         "unit": "tracks with flatness > 1",
         "severity": "interpretation",
-        "detail": "Signed vectors, positive loudness and flatness above one should not be clipped to [0,1]."
+        "detail": "Signed vectors, positive loudness and flatness above one are left as they are and are not clipped to [0,1]."
       }
     ],
     "action": "No cleaning, imputation, feature fitting or raw-file edits performed."
@@ -2066,7 +2066,7 @@
       "id": "acoustic_features",
       "title": "Acoustic-feature distributions",
       "caption": "Each metadata track is counted once. These are feature distributions, not feature importance or causal effects.",
-      "insight": "Features have different scales and shapes. Later preprocessing should consider these differences without using test outcomes.",
+      "insight": "Features have different scales and shapes. These differences matter for the preprocessing: the linear models scale the features, and the boosted trees do not need scaling.",
       "alt": "Eight histograms show acousticness, danceability, energy, instrumentalness, speechiness, valence, tempo, and loudness over unique tracks.",
       "image_path": "python/01_data_understanding/results/images/acoustic_features.png",
       "image_url": "../../python/01_data_understanding/results/images/acoustic_features.png",

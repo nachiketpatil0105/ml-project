@@ -1,6 +1,9 @@
 {
   "course": "ES 335",
-  "authors": ["Patil Nachiket Kiran (24110250)", "Krish Kishor Patil (24110171)"],
-  "repository_url": "github.com/nachiketpatil0105/ml-project",
-  "website_url": "nachiketpatil0105.github.io/ml-project"
+  "authors": [
+    "Patil Nachiket Kiran (24110250)",
+    "Krish Kishor Patil (24110171)"
+  ],
+  "repository_url": "https://github.com/nachiketpatil0105/ml-project",
+  "website_url": "https://nachiketpatil0105.github.io/ml-project"
 }

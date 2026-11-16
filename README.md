@@ -4,8 +4,9 @@
 One row = one song in the second half of a session. Target = `skip_2`. Main score = Mean Average Accuracy (MAA), as in the WSDM Cup 2019 challenge.
 The model is **feature-based**: it uses first-half behaviour and numeric song features, not song titles, artists or song identity.
 
+**Live site:** https://nachiketpatil0105.github.io/ml-project · **Repository:** https://github.com/nachiketpatil0105/ml-project · Authors: Patil Nachiket Kiran (24110250), Krish Kishor Patil (24110171).
+
 **Website:** `index.html` and `website/`. The pages are plain HTML, CSS and JavaScript. They read all numbers and tables from the result files in `python/*/results/`, so the website and the code always agree. Serve the folder over HTTP (`python3 -m http.server`) or publish it with GitHub Pages; opening the files directly from disk does not work because browsers block file loading.
-Put your names and the repository and website links in `site_config.json`.
 
 ## Data access
 `data/log_mini.csv` (session log, about 168,000 rows) and `data/tf_mini.csv` (song features, about 50,000 songs) are the mini partition of the Music Streaming Sessions Dataset (Brost et al., WWW 2019; WSDM Cup 2019). The official download is no longer offered, so they come from the public archive `https://github.com/suhani6/spotify-skip-analysis`. No script changes them.
@@ -54,13 +55,13 @@ Test sessions (2,000): LightGBM MAA 0.571 (95% interval 0.557 to 0.583) against 
 Please note: LightGBM and the other libraries can give slightly different models on different computers (core count, library version), so a re-run may change scores in the third decimal place.
 
 ## Extra experiments
-All Optuna trials and tuning grids are in `python/03_tuning/results/` (`development.json`, `optuna.db`). The feature-group ablation and the threshold curve are in `development.json`. Earlier development runs (first half = floor(L/2), development folds only): a per-song skip-rate feature was dropped (MAA 0.574 against 0.577); `skip_1`/`skip_3` features and per-session audio deltas changed MAA by under 0.001 and were dropped; removing the start/end reason shares lowered MAA from 0.577 to 0.560. These exploratory runs are described, not scripted.
+All Optuna trials and tuning grids are in `python/03_tuning/results/` (`development.json`, `optuna.db`). The feature-group ablation and the threshold curve are in `development.json`. Earlier development runs (first half = floor(L/2), development folds only): a per-song skip-rate feature was dropped (MAA 0.574 against 0.577); `skip_1`/`skip_3` features and per-session audio deltas changed MAA by under 0.001 and were dropped; removing the start/end reason shares lowered MAA from 0.577 to 0.560. These exploratory runs were done by hand with an earlier pipeline version and are described, not scripted: their numbers cannot be re-created from this repository. Everything else (Optuna search, grids, ablation, threshold curve) is scripted and saved.
 
 ## Use of the test set (disclosure)
 During development the test sessions were scored once with an earlier version of the pipeline (first half = floor(L/2), small grids): LightGBM 0.562, copy last skip 0.531. We then changed the first-half rule to match the challenge and replaced the grids with the Optuna search. Every search and choice used development data only. The final pipeline scored the test sessions once; the earlier run is disclosed here and on the Evaluation page.
 
 ## AI-use disclosure
-We used Claude (Anthropic) and ChatGPT (OpenAI) as a coding and writing assistant. It suggested the feature set, the comparison of LightGBM, XGBoost and CatBoost, the threshold rule and the explorer. We set the research question and proposal, decided the first-half rule, the search method and the validation method, reviewed and approved each change, and are responsible for the submission. All numbers on the website come from the scripts in this repository. Helped in coding and research.
+We used Claude (Anthropic) and ChatGPT (OpenAI) as a coding and writing assistant. It suggested the feature set, the comparison of LightGBM, XGBoost and CatBoost, the threshold rule and the explorer. We set the research question and proposal, decided the first-half rule, the search method and the validation method, reviewed and approved each change, and are responsible for the submission. All numbers on the website come from the scripts in this repository.
 
 ## References
 - Brost, Mehrotra, Jehan. The Music Streaming Sessions Dataset. WWW 2019. WSDM Cup 2019 Spotify Sequential Skip Prediction Challenge (AIcrowd).
