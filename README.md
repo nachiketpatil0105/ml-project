@@ -60,7 +60,7 @@ All Optuna trials and tuning grids are in `python/03_tuning/results/` (`developm
 During development the test sessions were scored once with an earlier version of the pipeline (first half = floor(L/2), small grids): LightGBM 0.562, copy last skip 0.531. We then changed the first-half rule to match the challenge and replaced the grids with the Optuna search. Every search and choice used development data only. The final pipeline scored the test sessions once; the earlier run is disclosed here and on the Evaluation page.
 
 ## AI-use disclosure
-We used Claude (Anthropic) as a coding and writing assistant. It suggested the feature set, the comparison of LightGBM, XGBoost and CatBoost, the threshold rule and the explorer. It wrote the code in this repository, drafted the website text, and looked up published solutions of the challenge. We set the research question and proposal, decided the first-half rule, the search method and the validation method, reviewed and approved each change, and are responsible for the submission. All numbers on the website come from the scripts in this repository.
+We used Claude (Anthropic) and ChatGPT (OpenAI) as a coding and writing assistant. It suggested the feature set, the comparison of LightGBM, XGBoost and CatBoost, the threshold rule and the explorer. We set the research question and proposal, decided the first-half rule, the search method and the validation method, reviewed and approved each change, and are responsible for the submission. All numbers on the website come from the scripts in this repository. Helped in coding and research.
 
 ## References
 - Brost, Mehrotra, Jehan. The Music Streaming Sessions Dataset. WWW 2019. WSDM Cup 2019 Spotify Sequential Skip Prediction Challenge (AIcrowd).
