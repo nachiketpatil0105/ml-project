@@ -1,0 +1,2753 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-15T18:26:23.518113+00:00",
+  "title": "Understanding the Music Streaming Sessions mini dataset",
+  "status": "computed_from_local_data",
+  "scope": {
+    "population": "All rows in the two supplied mini CSV files",
+    "purpose": "Descriptive data understanding only; no models or test metrics",
+    "target": "skip_2",
+    "split_status": "No train/test split is created or used by this script",
+    "caveat": "This full-data exploration is disclosed. Do not describe a later test set as completely unseen during all exploration. Freeze a split before model selection and perform model-directed analysis on development data only."
+  },
+  "paths": {
+    "project_root": "ml-project",
+    "json": "python/01_data_understanding/results/data_understanding.json",
+    "image_path_base": "Project root",
+    "image_url_base": "website/html/data.html",
+    "fetch_from_data_page": "../../python/01_data_understanding/results/data_understanding.json"
+  },
+  "sources": [
+    {
+      "title": "Spotify Sequential Skip Prediction Challenge",
+      "url": "https://www.aicrowd.com/challenges/spotify-sequential-skip-prediction-challenge",
+      "role": "Official challenge and access information"
+    },
+    {
+      "title": "Mini-data archive named in the project",
+      "url": "https://github.com/suhani6/spotify-skip-analysis",
+      "role": "Alternative archive reference; no hash or archive verification is performed by this script"
+    }
+  ],
+  "access_limits": [
+    "The official challenge page carries a July 2024 notice that original downloads are no longer available and directs requests to Spotify Research.",
+    "This analysis uses the user-supplied local CSVs. Public availability of an archive does not establish permission to redistribute its data; applicable terms must be checked before raw or record-level publication.",
+    "The local sample contains sessions of 10–20 tracks and a narrow popularity range. Findings should not be generalized to all streaming sessions or the full music catalog.",
+    "The supplied mini files contain no song titles, cross-session user IDs, uniform_random indicator or playlist snapshots. Shuffle alone cannot establish random treatment assignment."
+  ],
+  "size": {
+    "track_plays": 167880,
+    "sessions": 10000,
+    "unique_logged_tracks": 50704,
+    "metadata_tracks": 50704,
+    "log_columns": 21,
+    "track_columns": 30,
+    "session_length_min": 10,
+    "session_length_max": 20,
+    "distinct_dates": 18,
+    "date_min": "2018-05-12",
+    "date_max": "2018-07-16",
+    "note": "Date endpoints do not imply coverage of every intervening day."
+  },
+  "tables": [
+    {
+      "file": "log_mini.csv",
+      "row_unit": "One track play within a session",
+      "rows": 167880,
+      "columns": 21,
+      "size_bytes": 28918670
+    },
+    {
+      "file": "tf_mini.csv",
+      "row_unit": "One unique track",
+      "rows": 50704,
+      "columns": 30,
+      "size_bytes": 27997011
+    }
+  ],
+  "join": {
+    "left": "log.track_id_clean",
+    "right": "track_features.track_id",
+    "cardinality": "many-to-one",
+    "unmatched_rows": 0
+  },
+  "important_variables": [
+    {
+      "name": "session_id",
+      "table": "log",
+      "meaning": "Anonymous session key, not a user ID",
+      "relevance": "Split and group by session; not a predictor."
+    },
+    {
+      "name": "session_position",
+      "table": "log",
+      "meaning": "Track position within the recorded session",
+      "relevance": "Orders the observed and target windows."
+    },
+    {
+      "name": "session_length",
+      "table": "log",
+      "meaning": "Number of recorded tracks, capped at 20",
+      "relevance": "Supplied offline task information; eventual live length may be unknown."
+    },
+    {
+      "name": "track_id_clean",
+      "table": "log",
+      "meaning": "Anonymous track key",
+      "relevance": "Join to track_features.track_id; not a song title."
+    },
+    {
+      "name": "skip_2",
+      "table": "log",
+      "meaning": "Brief-play skip indicator",
+      "relevance": "Prediction target; only first-half values may be model inputs. Exact time thresholds are not encoded in these CSV files."
+    },
+    {
+      "name": "skip_1 / skip_3",
+      "table": "log",
+      "meaning": "Alternative skip indicators",
+      "relevance": "Different definitions; neither is interchangeable with skip_2."
+    },
+    {
+      "name": "not_skipped",
+      "table": "log",
+      "meaning": "Complete-playback indicator",
+      "relevance": "Not the complement of skip_2."
+    },
+    {
+      "name": "hist_user_behavior_reason_start",
+      "table": "log",
+      "meaning": "Reason the current track started",
+      "relevance": "Descriptive association only for future rows; model may use observed history."
+    },
+    {
+      "name": "hist_user_behavior_reason_end",
+      "table": "log",
+      "meaning": "Reason the current track ended",
+      "relevance": "Reveals outcome information; exclude future values."
+    },
+    {
+      "name": "context_type / context_switch",
+      "table": "log",
+      "meaning": "Playback source and whether context changed",
+      "relevance": "Context can change; use only first-half information for prediction."
+    },
+    {
+      "name": "pause flags / seek counts",
+      "table": "log",
+      "meaning": "Pauses before playback and seeks within a play",
+      "relevance": "Interaction fields, not safe future predictors despite hist_ names."
+    },
+    {
+      "name": "premium / hist_user_behavior_is_shuffle",
+      "table": "log",
+      "meaning": "Subscription and shuffle indicators",
+      "relevance": "Use observed values; shuffle does not imply uniform random ordering."
+    },
+    {
+      "name": "date / hour_of_day",
+      "table": "log",
+      "meaning": "Recorded date and hour",
+      "relevance": "Describe sample coverage; no cross-session user linkage."
+    },
+    {
+      "name": "track_id",
+      "table": "track_features",
+      "meaning": "Unique metadata key",
+      "relevance": "Many-to-one join from track_id_clean."
+    },
+    {
+      "name": "us_popularity_estimate",
+      "table": "track_features",
+      "meaning": "Supplied US popularity estimate",
+      "relevance": "Static reference signal; not assumed to be current Spotify API popularity."
+    },
+    {
+      "name": "duration",
+      "table": "track_features",
+      "meaning": "Track duration (interpreted in seconds)",
+      "relevance": "Candidate metadata; inspect extreme values."
+    },
+    {
+      "name": "danceability / energy / valence / acousticness / speechiness",
+      "table": "track_features",
+      "meaning": "Interpretable acoustic descriptors",
+      "relevance": "Candidate features and explanatory profile charts."
+    },
+    {
+      "name": "tempo / loudness",
+      "table": "track_features",
+      "meaning": "Tempo and loudness descriptors",
+      "relevance": "Conventional units are BPM and dB; zero/extreme values are not automatically missing."
+    },
+    {
+      "name": "acoustic_vector_0 ... acoustic_vector_7",
+      "table": "track_features",
+      "meaning": "Eight supplied signed acoustic embedding components",
+      "relevance": "Candidate features and history-to-candidate distances."
+    }
+  ],
+  "columns": {
+    "log": [
+      {
+        "name": "session_id",
+        "dtype": "str",
+        "missing": 0,
+        "unique_values": 10000
+      },
+      {
+        "name": "session_position",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 20,
+        "summary": {
+          "count": 167880.0,
+          "mean": 9.3259113653,
+          "std": 5.4576378157,
+          "min": 1.0,
+          "25%": 5.0,
+          "50%": 9.0,
+          "75%": 14.0,
+          "max": 20.0
+        }
+      },
+      {
+        "name": "session_length",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 11,
+        "summary": {
+          "count": 167880.0,
+          "mean": 17.6518227305,
+          "std": 3.4220253709,
+          "min": 10.0,
+          "25%": 15.0,
+          "50%": 20.0,
+          "75%": 20.0,
+          "max": 20.0
+        }
+      },
+      {
+        "name": "track_id_clean",
+        "dtype": "str",
+        "missing": 0,
+        "unique_values": 50704
+      },
+      {
+        "name": "skip_1",
+        "dtype": "boolean",
+        "missing": 0,
+        "unique_values": 2,
+        "value_counts": [
+          {
+            "value": "False",
+            "count": 97118
+          },
+          {
+            "value": "True",
+            "count": 70762
+          }
+        ]
+      },
+      {
+        "name": "skip_2",
+        "dtype": "boolean",
+        "missing": 0,
+        "unique_values": 2,
+        "value_counts": [
+          {
+            "value": "True",
+            "count": 86824
+          },
+          {
+            "value": "False",
+            "count": 81056
+          }
+        ]
+      },
+      {
+        "name": "skip_3",
+        "dtype": "boolean",
+        "missing": 0,
+        "unique_values": 2,
+        "value_counts": [
+          {
+            "value": "True",
+            "count": 108850
+          },
+          {
+            "value": "False",
+            "count": 59030
+          }
+        ]
+      },
+      {
+        "name": "not_skipped",
+        "dtype": "boolean",
+        "missing": 0,
+        "unique_values": 2,
+        "value_counts": [
+          {
+            "value": "False",
+            "count": 111996
+          },
+          {
+            "value": "True",
+            "count": 55884
+          }
+        ]
+      },
+      {
+        "name": "context_switch",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 2,
+        "summary": {
+          "count": 167880.0,
+          "mean": 0.0409042173,
+          "std": 0.1980689173,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 0.0,
+          "max": 1.0
+        }
+      },
+      {
+        "name": "no_pause_before_play",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 2,
+        "summary": {
+          "count": 167880.0,
+          "mean": 0.7676018585,
+          "std": 0.4223627682,
+          "min": 0.0,
+          "25%": 1.0,
+          "50%": 1.0,
+          "75%": 1.0,
+          "max": 1.0
+        }
+      },
+      {
+        "name": "short_pause_before_play",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 2,
+        "summary": {
+          "count": 167880.0,
+          "mean": 0.1466345008,
+          "std": 0.3537422358,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 0.0,
+          "max": 1.0
+        }
+      },
+      {
+        "name": "long_pause_before_play",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 2,
+        "summary": {
+          "count": 167880.0,
+          "mean": 0.1728317846,
+          "std": 0.3781029098,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 0.0,
+          "max": 1.0
+        }
+      },
+      {
+        "name": "hist_user_behavior_n_seekfwd",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 25,
+        "summary": {
+          "count": 167880.0,
+          "mean": 0.0389087443,
+          "std": 0.3672952271,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 0.0,
+          "max": 60.0
+        }
+      },
+      {
+        "name": "hist_user_behavior_n_seekback",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 30,
+        "summary": {
+          "count": 167880.0,
+          "mean": 0.0462592328,
+          "std": 0.6065577554,
+          "min": 0.0,
+          "25%": 0.0,
+          "50%": 0.0,
+          "75%": 0.0,
+          "max": 151.0
+        }
+      },
+      {
+        "name": "hist_user_behavior_is_shuffle",
+        "dtype": "boolean",
+        "missing": 0,
+        "unique_values": 2,
+        "value_counts": [
+          {
+            "value": "False",
+            "count": 116050
+          },
+          {
+            "value": "True",
+            "count": 51830
+          }
+        ]
+      },
+      {
+        "name": "hour_of_day",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 24,
+        "summary": {
+          "count": 167880.0,
+          "mean": 14.193084346,
+          "std": 5.9962432276,
+          "min": 0.0,
+          "25%": 11.0,
+          "50%": 15.0,
+          "75%": 19.0,
+          "max": 23.0
+        }
+      },
+      {
+        "name": "date",
+        "dtype": "str",
+        "missing": 0,
+        "unique_values": 18,
+        "value_counts": [
+          {
+            "value": "2018-07-15",
+            "count": 119639
+          },
+          {
+            "value": "2018-07-14",
+            "count": 46807
+          },
+          {
+            "value": "2018-07-13",
+            "count": 519
+          },
+          {
+            "value": "2018-07-12",
+            "count": 250
+          },
+          {
+            "value": "2018-07-11",
+            "count": 170
+          },
+          {
+            "value": "2018-07-10",
+            "count": 144
+          },
+          {
+            "value": "2018-07-05",
+            "count": 52
+          },
+          {
+            "value": "2018-07-07",
+            "count": 51
+          },
+          {
+            "value": "2018-07-06",
+            "count": 40
+          },
+          {
+            "value": "2018-07-09",
+            "count": 40
+          },
+          {
+            "value": "2018-07-16",
+            "count": 25
+          },
+          {
+            "value": "2018-07-04",
+            "count": 25
+          },
+          {
+            "value": "2018-06-05",
+            "count": 20
+          },
+          {
+            "value": "2018-05-12",
+            "count": 20
+          },
+          {
+            "value": "2018-06-29",
+            "count": 20
+          },
+          {
+            "value": "2018-06-30",
+            "count": 20
+          },
+          {
+            "value": "2018-06-19",
+            "count": 20
+          },
+          {
+            "value": "2018-05-18",
+            "count": 18
+          }
+        ]
+      },
+      {
+        "name": "premium",
+        "dtype": "boolean",
+        "missing": 0,
+        "unique_values": 2,
+        "value_counts": [
+          {
+            "value": "True",
+            "count": 136053
+          },
+          {
+            "value": "False",
+            "count": 31827
+          }
+        ]
+      },
+      {
+        "name": "context_type",
+        "dtype": "str",
+        "missing": 0,
+        "unique_values": 6,
+        "value_counts": [
+          {
+            "value": "user_collection",
+            "count": 67430
+          },
+          {
+            "value": "catalog",
+            "count": 38263
+          },
+          {
+            "value": "editorial_playlist",
+            "count": 35663
+          },
+          {
+            "value": "radio",
+            "count": 21107
+          },
+          {
+            "value": "personalized_playlist",
+            "count": 2976
+          },
+          {
+            "value": "charts",
+            "count": 2441
+          }
+        ]
+      },
+      {
+        "name": "hist_user_behavior_reason_start",
+        "dtype": "str",
+        "missing": 0,
+        "unique_values": 9,
+        "value_counts": [
+          {
+            "value": "fwdbtn",
+            "count": 79912
+          },
+          {
+            "value": "trackdone",
+            "count": 55075
+          },
+          {
+            "value": "clickrow",
+            "count": 17514
+          },
+          {
+            "value": "backbtn",
+            "count": 13034
+          },
+          {
+            "value": "appload",
+            "count": 1942
+          },
+          {
+            "value": "playbtn",
+            "count": 155
+          },
+          {
+            "value": "remote",
+            "count": 136
+          },
+          {
+            "value": "trackerror",
+            "count": 92
+          },
+          {
+            "value": "endplay",
+            "count": 20
+          }
+        ]
+      },
+      {
+        "name": "hist_user_behavior_reason_end",
+        "dtype": "str",
+        "missing": 0,
+        "unique_values": 7,
+        "value_counts": [
+          {
+            "value": "fwdbtn",
+            "count": 81389
+          },
+          {
+            "value": "trackdone",
+            "count": 57701
+          },
+          {
+            "value": "endplay",
+            "count": 14823
+          },
+          {
+            "value": "backbtn",
+            "count": 13129
+          },
+          {
+            "value": "logout",
+            "count": 563
+          },
+          {
+            "value": "remote",
+            "count": 267
+          },
+          {
+            "value": "clickrow",
+            "count": 8
+          }
+        ]
+      }
+    ],
+    "track_features": [
+      {
+        "name": "track_id",
+        "dtype": "str",
+        "missing": 0,
+        "unique_values": 50704
+      },
+      {
+        "name": "duration",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 33549,
+        "summary": {
+          "count": 50704.0,
+          "mean": 222.2679804372,
+          "std": 72.2248389919,
+          "min": 30.0133304596,
+          "25%": 183.9333343506,
+          "50%": 214.8666687012,
+          "75%": 250.4266662598,
+          "max": 1787.7609863281
+        }
+      },
+      {
+        "name": "release_year",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 69,
+        "summary": {
+          "count": 50704.0,
+          "mean": 2010.3247475544,
+          "std": 11.4718658477,
+          "min": 1950.0,
+          "25%": 2009.0,
+          "50%": 2015.0,
+          "75%": 2017.0,
+          "max": 2018.0
+        }
+      },
+      {
+        "name": "us_popularity_estimate",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50704,
+        "summary": {
+          "count": 50704.0,
+          "mean": 99.4551314376,
+          "std": 1.1392218668,
+          "min": 90.0188995011,
+          "25%": 99.509669993,
+          "50%": 99.8654435681,
+          "75%": 99.9611308672,
+          "max": 99.9999967833
+        }
+      },
+      {
+        "name": "acousticness",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50673,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.2503359702,
+          "std": 0.2760471489,
+          "min": 0.0,
+          "25%": 0.0252906932,
+          "50%": 0.1358206868,
+          "75%": 0.4061418772,
+          "max": 0.995796442
+        }
+      },
+      {
+        "name": "beat_strength",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50548,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.492074568,
+          "std": 0.1581023077,
+          "min": 0.0,
+          "25%": 0.3743784949,
+          "50%": 0.4937639087,
+          "75%": 0.6049943715,
+          "max": 0.990418911
+        }
+      },
+      {
+        "name": "bounciness",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50589,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.5145259658,
+          "std": 0.182594682,
+          "min": 0.0,
+          "25%": 0.372462593,
+          "50%": 0.5222655237,
+          "75%": 0.6559117883,
+          "max": 0.9725903273
+        }
+      },
+      {
+        "name": "danceability",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50580,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.6117423805,
+          "std": 0.1661458589,
+          "min": 0.0,
+          "25%": 0.502499193,
+          "50%": 0.6251445115,
+          "75%": 0.7362409085,
+          "max": 0.9849516749
+        }
+      },
+      {
+        "name": "dyn_range_mean",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50580,
+        "summary": {
+          "count": 50704.0,
+          "mean": 8.2159502712,
+          "std": 2.4106255737,
+          "min": 0.0,
+          "25%": 6.3566713333,
+          "50%": 8.0150747299,
+          "75%": 9.7920918465,
+          "max": 32.3427810669
+        }
+      },
+      {
+        "name": "energy",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50582,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.6414396204,
+          "std": 0.2079568358,
+          "min": 0.0,
+          "25%": 0.5078393519,
+          "50%": 0.6613684893,
+          "75%": 0.8031847626,
+          "max": 0.9998766184
+        }
+      },
+      {
+        "name": "flatness",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 49741,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.9965480112,
+          "std": 0.0456113033,
+          "min": 0.0,
+          "25%": 0.9759097099,
+          "50%": 1.0037897825,
+          "75%": 1.0261371434,
+          "max": 1.1032134295
+        }
+      },
+      {
+        "name": "instrumentalness",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50698,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.0705867078,
+          "std": 0.214226112,
+          "min": 0.0,
+          "25%": 1.08e-08,
+          "50%": 2.2116e-06,
+          "75%": 0.0007654784,
+          "max": 0.9993987679
+        }
+      },
+      {
+        "name": "key",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 12,
+        "summary": {
+          "count": 50704.0,
+          "mean": 5.2691109183,
+          "std": 3.5975779542,
+          "min": 0.0,
+          "25%": 2.0,
+          "50%": 5.0,
+          "75%": 8.0,
+          "max": 11.0
+        }
+      },
+      {
+        "name": "liveness",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50649,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.2055200379,
+          "std": 0.1764860733,
+          "min": 0.0,
+          "25%": 0.0982487015,
+          "50%": 0.13140288,
+          "75%": 0.2628228366,
+          "max": 0.9962573051
+        }
+      },
+      {
+        "name": "loudness",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 13522,
+        "summary": {
+          "count": 50704.0,
+          "mean": -7.5193155976,
+          "std": 3.9278577589,
+          "min": -60.0,
+          "25%": -8.9420003891,
+          "50%": -6.6880002022,
+          "75%": -5.0430002213,
+          "max": 1.6339999437
+        }
+      },
+      {
+        "name": "mechanism",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 32603,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.5476026008,
+          "std": 0.223802544,
+          "min": 0.0,
+          "25%": 0.3666523322,
+          "50%": 0.5710227489,
+          "75%": 0.7295373678,
+          "max": 1.0
+        }
+      },
+      {
+        "name": "mode",
+        "dtype": "str",
+        "missing": 0,
+        "unique_values": 2,
+        "value_counts": [
+          {
+            "value": "major",
+            "count": 32555
+          },
+          {
+            "value": "minor",
+            "count": 18149
+          }
+        ]
+      },
+      {
+        "name": "organism",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50611,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.3918742646,
+          "std": 0.2071157108,
+          "min": 0.0,
+          "25%": 0.2257422358,
+          "50%": 0.3640566319,
+          "75%": 0.5331308395,
+          "max": 0.9623497725
+        }
+      },
+      {
+        "name": "speechiness",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50628,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.1229978146,
+          "std": 0.1360217663,
+          "min": 0.0,
+          "25%": 0.0380278341,
+          "50%": 0.061793508,
+          "75%": 0.1602023058,
+          "max": 0.961407721
+        }
+      },
+      {
+        "name": "tempo",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 32249,
+        "summary": {
+          "count": 50704.0,
+          "mean": 121.5763957929,
+          "std": 29.7867406496,
+          "min": 0.0,
+          "25%": 97.158996582,
+          "50%": 120.1154975891,
+          "75%": 141.0140075684,
+          "max": 218.7749938965
+        }
+      },
+      {
+        "name": "time_signature",
+        "dtype": "int64",
+        "missing": 0,
+        "unique_values": 5,
+        "summary": {
+          "count": 50704.0,
+          "mean": 3.9131626696,
+          "std": 0.410035618,
+          "min": 0.0,
+          "25%": 4.0,
+          "50%": 4.0,
+          "75%": 4.0,
+          "max": 5.0
+        }
+      },
+      {
+        "name": "valence",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50607,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.4878042306,
+          "std": 0.246376207,
+          "min": 0.0,
+          "25%": 0.292559281,
+          "50%": 0.4782440066,
+          "75%": 0.6779467762,
+          "max": 0.9999899864
+        }
+      },
+      {
+        "name": "acoustic_vector_0",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50683,
+        "summary": {
+          "count": 50704.0,
+          "mean": -0.3322948223,
+          "std": 0.4163195639,
+          "min": -1.1227920055,
+          "25%": -0.7451484799,
+          "50%": -0.3347993046,
+          "75%": 0.0459207641,
+          "max": 0.932164669
+        }
+      },
+      {
+        "name": "acoustic_vector_1",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50655,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.2021927384,
+          "std": 0.2540236428,
+          "min": -1.0843604803,
+          "25%": 0.0864598379,
+          "50%": 0.26553455,
+          "75%": 0.3595533818,
+          "max": 0.8128367662
+        }
+      },
+      {
+        "name": "acoustic_vector_2",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50671,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.153935369,
+          "std": 0.2126595419,
+          "min": -0.7522307634,
+          "25%": 0.0516044144,
+          "50%": 0.207705453,
+          "75%": 0.2961324081,
+          "max": 0.6052882671
+        }
+      },
+      {
+        "name": "acoustic_vector_3",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50688,
+        "summary": {
+          "count": 50704.0,
+          "mean": -0.0405256541,
+          "std": 0.3331285497,
+          "min": -0.8091361523,
+          "25%": -0.2945739478,
+          "50%": -0.0017546192,
+          "75%": 0.1468277089,
+          "max": 1.0745043755
+        }
+      },
+      {
+        "name": "acoustic_vector_4",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50667,
+        "summary": {
+          "count": 50704.0,
+          "mean": -0.0272469883,
+          "std": 0.3774566683,
+          "min": -1.0298581123,
+          "25%": -0.3187510818,
+          "50%": -0.1769741103,
+          "75%": 0.2808520645,
+          "max": 0.8957690001
+        }
+      },
+      {
+        "name": "acoustic_vector_5",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50676,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.0494752133,
+          "std": 0.1442052088,
+          "min": -0.9424609542,
+          "25%": -0.0383369308,
+          "50%": 0.0627188571,
+          "75%": 0.1603656486,
+          "max": 0.3802794516
+        }
+      },
+      {
+        "name": "acoustic_vector_6",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50659,
+        "summary": {
+          "count": 50704.0,
+          "mean": -0.197758097,
+          "std": 0.349839567,
+          "min": -0.7363951802,
+          "25%": -0.4448489174,
+          "50%": -0.2985994667,
+          "75%": -0.0751581732,
+          "max": 0.9667596221
+        }
+      },
+      {
+        "name": "acoustic_vector_7",
+        "dtype": "float64",
+        "missing": 0,
+        "unique_values": 50677,
+        "summary": {
+          "count": 50704.0,
+          "mean": 0.0051529321,
+          "std": 0.3242593326,
+          "min": -0.9756474495,
+          "25%": -0.1768210642,
+          "50%": 0.0904234387,
+          "75%": 0.1942852773,
+          "max": 1.152212739
+        }
+      }
+    ]
+  },
+  "target_summary": {
+    "skip_1": {
+      "positive_count": 70762,
+      "labelled_plays": 167880,
+      "positive_rate": 0.42150345484870144
+    },
+    "skip_2": {
+      "positive_count": 86824,
+      "labelled_plays": 167880,
+      "positive_rate": 0.5171789373361925
+    },
+    "skip_3": {
+      "positive_count": 108850,
+      "labelled_plays": 167880,
+      "positive_rate": 0.6483797950917322
+    },
+    "not_skipped": {
+      "positive_count": 55884,
+      "labelled_plays": 167880,
+      "positive_rate": 0.33288062902072907
+    }
+  },
+  "data_quality": {
+    "status": "no_structural_problems_detected",
+    "checks": {
+      "missing_by_column": {
+        "log": {
+          "session_id": 0,
+          "session_position": 0,
+          "session_length": 0,
+          "track_id_clean": 0,
+          "skip_1": 0,
+          "skip_2": 0,
+          "skip_3": 0,
+          "not_skipped": 0,
+          "context_switch": 0,
+          "no_pause_before_play": 0,
+          "short_pause_before_play": 0,
+          "long_pause_before_play": 0,
+          "hist_user_behavior_n_seekfwd": 0,
+          "hist_user_behavior_n_seekback": 0,
+          "hist_user_behavior_is_shuffle": 0,
+          "hour_of_day": 0,
+          "date": 0,
+          "premium": 0,
+          "context_type": 0,
+          "hist_user_behavior_reason_start": 0,
+          "hist_user_behavior_reason_end": 0
+        },
+        "track_features": {
+          "track_id": 0,
+          "duration": 0,
+          "release_year": 0,
+          "us_popularity_estimate": 0,
+          "acousticness": 0,
+          "beat_strength": 0,
+          "bounciness": 0,
+          "danceability": 0,
+          "dyn_range_mean": 0,
+          "energy": 0,
+          "flatness": 0,
+          "instrumentalness": 0,
+          "key": 0,
+          "liveness": 0,
+          "loudness": 0,
+          "mechanism": 0,
+          "mode": 0,
+          "organism": 0,
+          "speechiness": 0,
+          "tempo": 0,
+          "time_signature": 0,
+          "valence": 0,
+          "acoustic_vector_0": 0,
+          "acoustic_vector_1": 0,
+          "acoustic_vector_2": 0,
+          "acoustic_vector_3": 0,
+          "acoustic_vector_4": 0,
+          "acoustic_vector_5": 0,
+          "acoustic_vector_6": 0,
+          "acoustic_vector_7": 0
+        }
+      },
+      "duplicate_log_rows": 0,
+      "duplicate_track_rows": 0,
+      "duplicate_session_positions": 0,
+      "duplicate_track_ids": 0,
+      "invalid_sessions": 0,
+      "unmatched_log_tracks_rows": 0,
+      "unused_metadata_tracks": 0,
+      "invalid_boolean_counts": {
+        "skip_1": 0,
+        "skip_2": 0,
+        "skip_3": 0,
+        "not_skipped": 0,
+        "premium": 0,
+        "hist_user_behavior_is_shuffle": 0
+      },
+      "invalid_indicator_counts": {
+        "context_switch": 0,
+        "no_pause_before_play": 0,
+        "short_pause_before_play": 0,
+        "long_pause_before_play": 0
+      },
+      "negative_seek_counts": {
+        "hist_user_behavior_n_seekfwd": 0,
+        "hist_user_behavior_n_seekback": 0
+      },
+      "invalid_hour_rows": 0,
+      "invalid_date_rows": 0,
+      "nonfinite_numeric_values": {
+        "log": {
+          "session_position": 0,
+          "session_length": 0,
+          "context_switch": 0,
+          "no_pause_before_play": 0,
+          "short_pause_before_play": 0,
+          "long_pause_before_play": 0,
+          "hist_user_behavior_n_seekfwd": 0,
+          "hist_user_behavior_n_seekback": 0,
+          "hour_of_day": 0
+        },
+        "track_features": {
+          "duration": 0,
+          "release_year": 0,
+          "us_popularity_estimate": 0,
+          "acousticness": 0,
+          "beat_strength": 0,
+          "bounciness": 0,
+          "danceability": 0,
+          "dyn_range_mean": 0,
+          "energy": 0,
+          "flatness": 0,
+          "instrumentalness": 0,
+          "key": 0,
+          "liveness": 0,
+          "loudness": 0,
+          "mechanism": 0,
+          "organism": 0,
+          "speechiness": 0,
+          "tempo": 0,
+          "time_signature": 0,
+          "valence": 0,
+          "acoustic_vector_0": 0,
+          "acoustic_vector_1": 0,
+          "acoustic_vector_2": 0,
+          "acoustic_vector_3": 0,
+          "acoustic_vector_4": 0,
+          "acoustic_vector_5": 0,
+          "acoustic_vector_6": 0,
+          "acoustic_vector_7": 0
+        }
+      },
+      "nonpositive_duration_tracks": 0
+    },
+    "observations": {
+      "history_rows": 85124,
+      "prediction_window_rows": 82756,
+      "sessions_without_non_skip2_history": 739,
+      "sessions_without_complete_play_history": 1908,
+      "non_skip2_not_complete_play_rows": 25172,
+      "single_play_tracks": 31823,
+      "tracks_with_at_least_five_plays": 5397,
+      "sessions_with_changing_context": 2493,
+      "sessions_with_changing_premium": 2,
+      "zero_tempo_tracks": 26,
+      "zero_time_signature_tracks": 28,
+      "flatness_above_one_tracks": 27420,
+      "positive_loudness_tracks": 14,
+      "zero_norm_acoustic_vectors": 0,
+      "popularity_min": 90.0188995011263,
+      "popularity_max": 99.99999678325528
+    },
+    "issues": [
+      {
+        "id": "empty_history",
+        "title": "Some history profiles are empty",
+        "count": 739,
+        "unit": "sessions",
+        "severity": "handling_required",
+        "detail": "No first-half track has skip_2=false. Similarity features need an explicit fallback and missing-profile indicator."
+      },
+      {
+        "id": "different_targets",
+        "title": "Non-skip_2 is not complete playback",
+        "count": 25172,
+        "unit": "plays",
+        "severity": "definition",
+        "detail": "These rows have both skip_2=false and not_skipped=false. Do not use the terms interchangeably."
+      },
+      {
+        "id": "sparse_tracks",
+        "title": "Many tracks have one observed play",
+        "count": 31823,
+        "unit": "tracks",
+        "severity": "interpretation",
+        "detail": "Track-level skip rates based on very few plays are unstable; display denominators and label filtered views."
+      },
+      {
+        "id": "changing_context",
+        "title": "Context can change inside a session",
+        "count": 2493,
+        "unit": "sessions",
+        "severity": "leakage_risk",
+        "detail": "Use only observed first-half context when predicting the future."
+      },
+      {
+        "id": "changing_premium",
+        "title": "Premium status is not always constant",
+        "count": 2,
+        "unit": "sessions",
+        "severity": "handling_required",
+        "detail": "Retain these rows; use the final observed first-half value rather than a future value."
+      },
+      {
+        "id": "zero_tempo",
+        "title": "Zero tempo values occur",
+        "count": 26,
+        "unit": "tracks",
+        "severity": "investigate",
+        "detail": "Keep the original values. Zero may reflect an unestimated descriptor, but these files do not establish that interpretation."
+      },
+      {
+        "id": "zero_meter",
+        "title": "Zero time signatures occur",
+        "count": 28,
+        "unit": "tracks",
+        "severity": "investigate",
+        "detail": "Do not automatically treat zero as a conventional musical meter or replace it without a documented rule."
+      },
+      {
+        "id": "feature_ranges",
+        "title": "Not every acoustic feature is a probability",
+        "count": 27420,
+        "unit": "tracks with flatness > 1",
+        "severity": "interpretation",
+        "detail": "Signed vectors, positive loudness and flatness above one should not be clipped to [0,1]."
+      }
+    ],
+    "action": "No cleaning, imputation, feature fitting or raw-file edits performed."
+  },
+  "charts": [
+    {
+      "id": "session_lengths",
+      "title": "Session lengths",
+      "caption": "Each session is counted once. The maximum recorded session length in these files is 20.",
+      "insight": "5,066 of 10,000 sessions (50.7%) are at the 20-track maximum.",
+      "alt": "Bar chart of session counts for lengths 10 through 20, with the 20-track maximum highlighted.",
+      "image_path": "python/01_data_understanding/results/images/session_lengths.png",
+      "image_url": "../../python/01_data_understanding/results/images/session_lengths.png",
+      "data": [
+        {
+          "length": 10,
+          "sessions": 819
+        },
+        {
+          "length": 11,
+          "sessions": 752
+        },
+        {
+          "length": 12,
+          "sessions": 646
+        },
+        {
+          "length": 13,
+          "sessions": 547
+        },
+        {
+          "length": 14,
+          "sessions": 459
+        },
+        {
+          "length": 15,
+          "sessions": 435
+        },
+        {
+          "length": 16,
+          "sessions": 339
+        },
+        {
+          "length": 17,
+          "sessions": 320
+        },
+        {
+          "length": 18,
+          "sessions": 303
+        },
+        {
+          "length": 19,
+          "sessions": 314
+        },
+        {
+          "length": 20,
+          "sessions": 5066
+        }
+      ]
+    },
+    {
+      "id": "skip_rates",
+      "title": "Skip rate by length and position",
+      "caption": "Track-play-weighted skip_2 rates. Denominators vary by position; later positions only include longer sessions.",
+      "insight": "Differences are descriptive associations, not evidence that session length or position causes skipping.",
+      "alt": "Two line charts of skip_2 rate by recorded session length and track position, with fixed 0–100% axes.",
+      "image_path": "python/01_data_understanding/results/images/skip_rates.png",
+      "image_url": "../../python/01_data_understanding/results/images/skip_rates.png",
+      "data": {
+        "by_length": [
+          {
+            "session_length": 10,
+            "observations": 8190,
+            "positives": 3593,
+            "rate": 0.4387057387
+          },
+          {
+            "session_length": 11,
+            "observations": 8272,
+            "positives": 3709,
+            "rate": 0.4483800774
+          },
+          {
+            "session_length": 12,
+            "observations": 7752,
+            "positives": 3603,
+            "rate": 0.4647832817
+          },
+          {
+            "session_length": 13,
+            "observations": 7111,
+            "positives": 3307,
+            "rate": 0.4650541415
+          },
+          {
+            "session_length": 14,
+            "observations": 6426,
+            "positives": 3062,
+            "rate": 0.4765017118
+          },
+          {
+            "session_length": 15,
+            "observations": 6525,
+            "positives": 3033,
+            "rate": 0.4648275862
+          },
+          {
+            "session_length": 16,
+            "observations": 5424,
+            "positives": 2550,
+            "rate": 0.4701327434
+          },
+          {
+            "session_length": 17,
+            "observations": 5440,
+            "positives": 2624,
+            "rate": 0.4823529412
+          },
+          {
+            "session_length": 18,
+            "observations": 5454,
+            "positives": 2811,
+            "rate": 0.5154015402
+          },
+          {
+            "session_length": 19,
+            "observations": 5966,
+            "positives": 2916,
+            "rate": 0.4887696949
+          },
+          {
+            "session_length": 20,
+            "observations": 101320,
+            "positives": 55616,
+            "rate": 0.5489143308
+          }
+        ],
+        "by_position": [
+          {
+            "session_position": 1,
+            "observations": 10000,
+            "positives": 3773,
+            "rate": 0.3773
+          },
+          {
+            "session_position": 2,
+            "observations": 10000,
+            "positives": 4760,
+            "rate": 0.476
+          },
+          {
+            "session_position": 3,
+            "observations": 10000,
+            "positives": 5054,
+            "rate": 0.5054
+          },
+          {
+            "session_position": 4,
+            "observations": 10000,
+            "positives": 5297,
+            "rate": 0.5297
+          },
+          {
+            "session_position": 5,
+            "observations": 10000,
+            "positives": 5315,
+            "rate": 0.5315
+          },
+          {
+            "session_position": 6,
+            "observations": 10000,
+            "positives": 5427,
+            "rate": 0.5427
+          },
+          {
+            "session_position": 7,
+            "observations": 10000,
+            "positives": 5397,
+            "rate": 0.5397
+          },
+          {
+            "session_position": 8,
+            "observations": 10000,
+            "positives": 5405,
+            "rate": 0.5405
+          },
+          {
+            "session_position": 9,
+            "observations": 10000,
+            "positives": 5318,
+            "rate": 0.5318
+          },
+          {
+            "session_position": 10,
+            "observations": 10000,
+            "positives": 5164,
+            "rate": 0.5164
+          },
+          {
+            "session_position": 11,
+            "observations": 9181,
+            "positives": 4663,
+            "rate": 0.5078967433
+          },
+          {
+            "session_position": 12,
+            "observations": 8429,
+            "positives": 4463,
+            "rate": 0.5294815518
+          },
+          {
+            "session_position": 13,
+            "observations": 7783,
+            "positives": 4119,
+            "rate": 0.5292303739
+          },
+          {
+            "session_position": 14,
+            "observations": 7236,
+            "positives": 3867,
+            "rate": 0.5344112769
+          },
+          {
+            "session_position": 15,
+            "observations": 6777,
+            "positives": 3587,
+            "rate": 0.5292902464
+          },
+          {
+            "session_position": 16,
+            "observations": 6342,
+            "positives": 3358,
+            "rate": 0.5294859666
+          },
+          {
+            "session_position": 17,
+            "observations": 6003,
+            "positives": 3181,
+            "rate": 0.5299017158
+          },
+          {
+            "session_position": 18,
+            "observations": 5683,
+            "positives": 3026,
+            "rate": 0.5324652472
+          },
+          {
+            "session_position": 19,
+            "observations": 5380,
+            "positives": 2882,
+            "rate": 0.5356877323
+          },
+          {
+            "session_position": 20,
+            "observations": 5066,
+            "positives": 2768,
+            "rate": 0.5463876826
+          }
+        ]
+      }
+    },
+    {
+      "id": "playback_start",
+      "title": "Playback-start reasons",
+      "caption": "Each bar uses track plays with that start reason. Small categories can have unstable rates. Future start reasons are not permitted model features.",
+      "insight": "Playback-start reason is useful for descriptive understanding; using a future row's reason would break the observation boundary.",
+      "alt": "Horizontal bars show skip_2 rates by start reason, with each category's play count in its label.",
+      "image_path": "python/01_data_understanding/results/images/playback_start.png",
+      "image_url": "../../python/01_data_understanding/results/images/playback_start.png",
+      "data": [
+        {
+          "hist_user_behavior_reason_start": "trackdone",
+          "observations": 55075,
+          "positives": 9059,
+          "rate": 0.1644847935
+        },
+        {
+          "hist_user_behavior_reason_start": "clickrow",
+          "observations": 17514,
+          "positives": 6630,
+          "rate": 0.3785542994
+        },
+        {
+          "hist_user_behavior_reason_start": "endplay",
+          "observations": 20,
+          "positives": 8,
+          "rate": 0.4
+        },
+        {
+          "hist_user_behavior_reason_start": "remote",
+          "observations": 136,
+          "positives": 60,
+          "rate": 0.4411764706
+        },
+        {
+          "hist_user_behavior_reason_start": "appload",
+          "observations": 1942,
+          "positives": 892,
+          "rate": 0.4593202884
+        },
+        {
+          "hist_user_behavior_reason_start": "playbtn",
+          "observations": 155,
+          "positives": 75,
+          "rate": 0.4838709677
+        },
+        {
+          "hist_user_behavior_reason_start": "trackerror",
+          "observations": 92,
+          "positives": 45,
+          "rate": 0.4891304348
+        },
+        {
+          "hist_user_behavior_reason_start": "backbtn",
+          "observations": 13034,
+          "positives": 8935,
+          "rate": 0.6855148074
+        },
+        {
+          "hist_user_behavior_reason_start": "fwdbtn",
+          "observations": 79912,
+          "positives": 61120,
+          "rate": 0.7648413255
+        }
+      ]
+    },
+    {
+      "id": "listening_contexts",
+      "title": "Listening contexts",
+      "caption": "Counts and rates are over track plays, not unique users or sessions. One session can contain multiple contexts.",
+      "insight": "2,493 sessions contain more than one context type; future context cannot be assumed constant.",
+      "alt": "Two horizontal bar charts compare play counts and skip_2 rates across listening contexts.",
+      "image_path": "python/01_data_understanding/results/images/listening_contexts.png",
+      "image_url": "../../python/01_data_understanding/results/images/listening_contexts.png",
+      "data": [
+        {
+          "context_type": "charts",
+          "observations": 2441,
+          "positives": 1355,
+          "rate": 0.5551003687
+        },
+        {
+          "context_type": "personalized_playlist",
+          "observations": 2976,
+          "positives": 1346,
+          "rate": 0.4522849462
+        },
+        {
+          "context_type": "radio",
+          "observations": 21107,
+          "positives": 11688,
+          "rate": 0.5537499408
+        },
+        {
+          "context_type": "editorial_playlist",
+          "observations": 35663,
+          "positives": 18123,
+          "rate": 0.5081737375
+        },
+        {
+          "context_type": "catalog",
+          "observations": 38263,
+          "positives": 17468,
+          "rate": 0.4565245799
+        },
+        {
+          "context_type": "user_collection",
+          "observations": 67430,
+          "positives": 36844,
+          "rate": 0.5464036779
+        }
+      ]
+    },
+    {
+      "id": "context_switches",
+      "title": "Context switches",
+      "caption": "The source-context chart uses the previous track's context and excludes first positions. The position chart includes recorded first-position flags whose pre-session context is unavailable.",
+      "insight": "Current context is not necessarily the source of a switch. Source categories are explicitly shifted within each session.",
+      "alt": "Line chart of context-switch rates by position and bar chart by previous context.",
+      "image_path": "python/01_data_understanding/results/images/context_switches.png",
+      "image_url": "../../python/01_data_understanding/results/images/context_switches.png",
+      "data": {
+        "by_position": [
+          {
+            "session_position": 1,
+            "observations": 10000,
+            "positives": 0,
+            "rate": 0.0
+          },
+          {
+            "session_position": 2,
+            "observations": 10000,
+            "positives": 948,
+            "rate": 0.0948
+          },
+          {
+            "session_position": 3,
+            "observations": 10000,
+            "positives": 588,
+            "rate": 0.0588
+          },
+          {
+            "session_position": 4,
+            "observations": 10000,
+            "positives": 472,
+            "rate": 0.0472
+          },
+          {
+            "session_position": 5,
+            "observations": 10000,
+            "positives": 446,
+            "rate": 0.0446
+          },
+          {
+            "session_position": 6,
+            "observations": 10000,
+            "positives": 417,
+            "rate": 0.0417
+          },
+          {
+            "session_position": 7,
+            "observations": 10000,
+            "positives": 373,
+            "rate": 0.0373
+          },
+          {
+            "session_position": 8,
+            "observations": 10000,
+            "positives": 372,
+            "rate": 0.0372
+          },
+          {
+            "session_position": 9,
+            "observations": 10000,
+            "positives": 358,
+            "rate": 0.0358
+          },
+          {
+            "session_position": 10,
+            "observations": 10000,
+            "positives": 362,
+            "rate": 0.0362
+          },
+          {
+            "session_position": 11,
+            "observations": 9181,
+            "positives": 363,
+            "rate": 0.0395381767
+          },
+          {
+            "session_position": 12,
+            "observations": 8429,
+            "positives": 336,
+            "rate": 0.0398623799
+          },
+          {
+            "session_position": 13,
+            "observations": 7783,
+            "positives": 298,
+            "rate": 0.0382885777
+          },
+          {
+            "session_position": 14,
+            "observations": 7236,
+            "positives": 262,
+            "rate": 0.0362078496
+          },
+          {
+            "session_position": 15,
+            "observations": 6777,
+            "positives": 277,
+            "rate": 0.0408735429
+          },
+          {
+            "session_position": 16,
+            "observations": 6342,
+            "positives": 214,
+            "rate": 0.0337432986
+          },
+          {
+            "session_position": 17,
+            "observations": 6003,
+            "positives": 211,
+            "rate": 0.0351490921
+          },
+          {
+            "session_position": 18,
+            "observations": 5683,
+            "positives": 204,
+            "rate": 0.0358965335
+          },
+          {
+            "session_position": 19,
+            "observations": 5380,
+            "positives": 189,
+            "rate": 0.0351301115
+          },
+          {
+            "session_position": 20,
+            "observations": 5066,
+            "positives": 177,
+            "rate": 0.0349388077
+          }
+        ],
+        "by_source_context": [
+          {
+            "source_context": "user_collection",
+            "observations": 63412,
+            "positives": 1159,
+            "rate": 0.0182772977
+          },
+          {
+            "source_context": "charts",
+            "observations": 2302,
+            "positives": 47,
+            "rate": 0.0204170287
+          },
+          {
+            "source_context": "editorial_playlist",
+            "observations": 33553,
+            "positives": 1028,
+            "rate": 0.030638095
+          },
+          {
+            "source_context": "personalized_playlist",
+            "observations": 2800,
+            "positives": 88,
+            "rate": 0.0314285714
+          },
+          {
+            "source_context": "radio",
+            "observations": 19788,
+            "positives": 1040,
+            "rate": 0.0525571053
+          },
+          {
+            "source_context": "catalog",
+            "observations": 36025,
+            "positives": 3505,
+            "rate": 0.0972935461
+          }
+        ],
+        "by_length": [
+          {
+            "session_length": 10,
+            "observations": 8190,
+            "positives": 313,
+            "rate": 0.0382173382
+          },
+          {
+            "session_length": 11,
+            "observations": 8272,
+            "positives": 422,
+            "rate": 0.0510154739
+          },
+          {
+            "session_length": 12,
+            "observations": 7752,
+            "positives": 338,
+            "rate": 0.0436016512
+          },
+          {
+            "session_length": 13,
+            "observations": 7111,
+            "positives": 326,
+            "rate": 0.0458444663
+          },
+          {
+            "session_length": 14,
+            "observations": 6426,
+            "positives": 306,
+            "rate": 0.0476190476
+          },
+          {
+            "session_length": 15,
+            "observations": 6525,
+            "positives": 294,
+            "rate": 0.0450574713
+          },
+          {
+            "session_length": 16,
+            "observations": 5424,
+            "positives": 234,
+            "rate": 0.0431415929
+          },
+          {
+            "session_length": 17,
+            "observations": 5440,
+            "positives": 242,
+            "rate": 0.0444852941
+          },
+          {
+            "session_length": 18,
+            "observations": 5454,
+            "positives": 213,
+            "rate": 0.0390539054
+          },
+          {
+            "session_length": 19,
+            "observations": 5966,
+            "positives": 271,
+            "rate": 0.0454240697
+          },
+          {
+            "session_length": 20,
+            "observations": 101320,
+            "positives": 3908,
+            "rate": 0.0385708646
+          }
+        ]
+      }
+    },
+    {
+      "id": "track_skip_distribution",
+      "title": "Per-track skip rates",
+      "caption": "Each track contributes one rate, independent of how often it was played. The filtered view requires at least five observed plays; it changes the population.",
+      "insight": "31,823 tracks (62.8%) appear once. Their observed rates can only be 0% or 100%.",
+      "alt": "Histograms compare all tracks' observed skip rates with the subset having at least five plays.",
+      "image_path": "python/01_data_understanding/results/images/track_skip_distribution.png",
+      "image_url": "../../python/01_data_understanding/results/images/track_skip_distribution.png",
+      "data": {
+        "All tracks": {
+          "tracks": 50704,
+          "bin_edges": [
+            0.0,
+            0.05,
+            0.1,
+            0.15000000000000002,
+            0.2,
+            0.25,
+            0.30000000000000004,
+            0.35000000000000003,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6000000000000001,
+            0.65,
+            0.7000000000000001,
+            0.75,
+            0.8,
+            0.8500000000000001,
+            0.9,
+            0.9500000000000001,
+            1.0
+          ],
+          "counts": [
+            18022,
+            5,
+            53,
+            90,
+            188,
+            559,
+            1520,
+            207,
+            762,
+            260,
+            5416,
+            866,
+            293,
+            1829,
+            197,
+            645,
+            369,
+            92,
+            10,
+            19321
+          ]
+        },
+        "At least five plays": {
+          "tracks": 5397,
+          "bin_edges": [
+            0.0,
+            0.05,
+            0.1,
+            0.15000000000000002,
+            0.2,
+            0.25,
+            0.30000000000000004,
+            0.35000000000000003,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6000000000000001,
+            0.65,
+            0.7000000000000001,
+            0.75,
+            0.8,
+            0.8500000000000001,
+            0.9,
+            0.9500000000000001,
+            1.0
+          ],
+          "counts": [
+            77,
+            5,
+            53,
+            90,
+            188,
+            180,
+            289,
+            207,
+            762,
+            260,
+            793,
+            866,
+            293,
+            421,
+            197,
+            138,
+            369,
+            92,
+            10,
+            107
+          ]
+        }
+      }
+    },
+    {
+      "id": "acoustic_features",
+      "title": "Acoustic-feature distributions",
+      "caption": "Each metadata track is counted once. These are feature distributions, not feature importance or causal effects.",
+      "insight": "Features have different scales and shapes. Later preprocessing should consider these differences without using test outcomes.",
+      "alt": "Eight histograms show acousticness, danceability, energy, instrumentalness, speechiness, valence, tempo, and loudness over unique tracks.",
+      "image_path": "python/01_data_understanding/results/images/acoustic_features.png",
+      "image_url": "../../python/01_data_understanding/results/images/acoustic_features.png",
+      "data": {
+        "acousticness": {
+          "n": 50704,
+          "bin_edges": [
+            0.0,
+            0.03319321473439534,
+            0.06638642946879068,
+            0.09957964420318602,
+            0.13277285893758137,
+            0.16596607367197672,
+            0.19915928840637204,
+            0.23235250314076739,
+            0.26554571787516273,
+            0.2987389326095581,
+            0.33193214734395343,
+            0.3651253620783488,
+            0.3983185768127441,
+            0.4315117915471394,
+            0.46470500628153477,
+            0.4978982210159301,
+            0.5310914357503255,
+            0.5642846504847208,
+            0.5974778652191162,
+            0.6306710799535115,
+            0.6638642946879069,
+            0.6970575094223022,
+            0.7302507241566976,
+            0.7634439388910929,
+            0.7966371536254881,
+            0.8298303683598836,
+            0.8630235830942788,
+            0.8962167978286742,
+            0.9294100125630695,
+            0.962603227297465,
+            0.9957964420318604
+          ],
+          "counts": [
+            14228,
+            4842,
+            3341,
+            2734,
+            2330,
+            2023,
+            1754,
+            1544,
+            1364,
+            1346,
+            1179,
+            1099,
+            1001,
+            964,
+            906,
+            842,
+            747,
+            766,
+            743,
+            710,
+            708,
+            686,
+            658,
+            693,
+            628,
+            653,
+            599,
+            542,
+            461,
+            613
+          ]
+        },
+        "danceability": {
+          "n": 50704,
+          "bin_edges": [
+            0.0,
+            0.032831722497940065,
+            0.06566344499588013,
+            0.0984951674938202,
+            0.13132688999176026,
+            0.16415861248970032,
+            0.1969903349876404,
+            0.22982205748558046,
+            0.2626537799835205,
+            0.2954855024814606,
+            0.32831722497940063,
+            0.3611489474773407,
+            0.3939806699752808,
+            0.42681239247322084,
+            0.4596441149711609,
+            0.49247583746910095,
+            0.525307559967041,
+            0.5581392824649811,
+            0.5909710049629212,
+            0.6238027274608612,
+            0.6566344499588013,
+            0.6894661724567414,
+            0.7222978949546814,
+            0.7551296174526215,
+            0.7879613399505616,
+            0.8207930624485016,
+            0.8536247849464417,
+            0.8864565074443818,
+            0.9192882299423218,
+            0.9521199524402619,
+            0.984951674938202
+          ],
+          "counts": [
+            26,
+            11,
+            70,
+            78,
+            188,
+            259,
+            357,
+            501,
+            649,
+            772,
+            988,
+            1364,
+            1749,
+            2167,
+            2628,
+            3012,
+            3348,
+            3480,
+            3548,
+            3810,
+            3773,
+            3708,
+            3551,
+            3212,
+            2613,
+            1994,
+            1403,
+            831,
+            479,
+            135
+          ]
+        },
+        "energy": {
+          "n": 50704,
+          "bin_edges": [
+            0.0,
+            0.03332922061284383,
+            0.06665844122568766,
+            0.0999876618385315,
+            0.13331688245137532,
+            0.16664610306421915,
+            0.199975323677063,
+            0.23330454428990682,
+            0.26663376490275065,
+            0.29996298551559447,
+            0.3332922061284383,
+            0.3666214267412821,
+            0.399950647354126,
+            0.4332798679669698,
+            0.46660908857981365,
+            0.49993830919265747,
+            0.5332675298055013,
+            0.5665967504183451,
+            0.5999259710311889,
+            0.6332551916440328,
+            0.6665844122568766,
+            0.6999136328697204,
+            0.7332428534825642,
+            0.7665720740954081,
+            0.799901294708252,
+            0.8332305153210958,
+            0.8665597359339396,
+            0.8998889565467835,
+            0.9332181771596273,
+            0.9665473977724711,
+            0.9998766183853148
+          ],
+          "counts": [
+            246,
+            229,
+            210,
+            273,
+            308,
+            358,
+            440,
+            609,
+            685,
+            909,
+            994,
+            1239,
+            1540,
+            1903,
+            2259,
+            2273,
+            2704,
+            2783,
+            2836,
+            3077,
+            3103,
+            3218,
+            2868,
+            2704,
+            2809,
+            2506,
+            2403,
+            1988,
+            1930,
+            1300
+          ]
+        },
+        "instrumentalness": {
+          "n": 50704,
+          "bin_edges": [
+            0.0,
+            0.03331329226493836,
+            0.06662658452987671,
+            0.09993987679481507,
+            0.13325316905975343,
+            0.16656646132469177,
+            0.19987975358963014,
+            0.23319304585456851,
+            0.26650633811950686,
+            0.2998196303844452,
+            0.33313292264938354,
+            0.36644621491432194,
+            0.3997595071792603,
+            0.43307279944419863,
+            0.46638609170913703,
+            0.4996993839740754,
+            0.5330126762390137,
+            0.5663259685039521,
+            0.5996392607688904,
+            0.6329525530338288,
+            0.6662658452987671,
+            0.6995791375637055,
+            0.7328924298286439,
+            0.7662057220935822,
+            0.7995190143585206,
+            0.832832306623459,
+            0.8661455988883973,
+            0.8994588911533357,
+            0.9327721834182741,
+            0.9660854756832123,
+            0.9993987679481506
+          ],
+          "counts": [
+            43711,
+            797,
+            505,
+            349,
+            243,
+            230,
+            190,
+            146,
+            170,
+            124,
+            128,
+            126,
+            121,
+            115,
+            132,
+            134,
+            137,
+            120,
+            132,
+            122,
+            153,
+            159,
+            194,
+            236,
+            294,
+            446,
+            495,
+            528,
+            356,
+            111
+          ]
+        },
+        "speechiness": {
+          "n": 50704,
+          "bin_edges": [
+            0.0,
+            0.03204692403475443,
+            0.06409384806950887,
+            0.0961407721042633,
+            0.12818769613901773,
+            0.16023462017377216,
+            0.1922815442085266,
+            0.22432846824328104,
+            0.25637539227803546,
+            0.2884223163127899,
+            0.3204692403475443,
+            0.35251616438229877,
+            0.3845630884170532,
+            0.4166100124518076,
+            0.4486569364865621,
+            0.4807038605213165,
+            0.5127507845560709,
+            0.5447977085908253,
+            0.5768446326255798,
+            0.6088915566603342,
+            0.6409384806950886,
+            0.6729854047298431,
+            0.7050323287645975,
+            0.7370792527993519,
+            0.7691261768341064,
+            0.8011731008688608,
+            0.8332200249036152,
+            0.8652669489383696,
+            0.8973138729731241,
+            0.9293607970078785,
+            0.961407721042633
+          ],
+          "counts": [
+            6446,
+            19645,
+            6323,
+            3316,
+            2299,
+            1789,
+            1749,
+            1629,
+            1587,
+            1317,
+            1186,
+            870,
+            683,
+            468,
+            333,
+            231,
+            130,
+            84,
+            44,
+            48,
+            22,
+            36,
+            28,
+            26,
+            30,
+            24,
+            36,
+            51,
+            117,
+            157
+          ]
+        },
+        "valence": {
+          "n": 50704,
+          "bin_edges": [
+            0.0,
+            0.033332999547322585,
+            0.06666599909464517,
+            0.09999899864196776,
+            0.13333199818929034,
+            0.16666499773661292,
+            0.19999799728393552,
+            0.2333309968312581,
+            0.2666639963785807,
+            0.2999969959259033,
+            0.33332999547322584,
+            0.36666299502054844,
+            0.39999599456787105,
+            0.4333289941151936,
+            0.4666619936625162,
+            0.49999499320983876,
+            0.5333279927571614,
+            0.566660992304484,
+            0.5999939918518066,
+            0.6333269913991291,
+            0.6666599909464517,
+            0.6999929904937743,
+            0.7333259900410969,
+            0.7666589895884195,
+            0.7999919891357421,
+            0.8333249886830646,
+            0.8666579882303872,
+            0.8999909877777098,
+            0.9333239873250324,
+            0.966656986872355,
+            0.9999899864196776
+          ],
+          "counts": [
+            197,
+            1152,
+            1064,
+            1286,
+            1612,
+            1936,
+            1931,
+            1952,
+            2026,
+            2287,
+            2376,
+            2404,
+            2192,
+            2222,
+            2201,
+            2297,
+            2223,
+            2083,
+            1997,
+            1948,
+            1887,
+            1687,
+            1602,
+            1501,
+            1390,
+            1218,
+            1156,
+            1079,
+            1313,
+            485
+          ]
+        },
+        "tempo": {
+          "n": 50704,
+          "bin_edges": [
+            0.0,
+            7.29249979654948,
+            14.58499959309896,
+            21.87749938964844,
+            29.16999918619792,
+            36.4624989827474,
+            43.75499877929688,
+            51.04749857584636,
+            58.33999837239584,
+            65.63249816894532,
+            72.9249979654948,
+            80.21749776204427,
+            87.50999755859377,
+            94.80249735514325,
+            102.09499715169272,
+            109.3874969482422,
+            116.67999674479168,
+            123.97249654134116,
+            131.26499633789064,
+            138.55749613444013,
+            145.8499959309896,
+            153.14249572753909,
+            160.43499552408855,
+            167.72749532063804,
+            175.01999511718753,
+            182.312494913737,
+            189.6049947102865,
+            196.89749450683595,
+            204.18999430338545,
+            211.4824940999349,
+            218.7749938964844
+          ],
+          "counts": [
+            26,
+            0,
+            0,
+            0,
+            4,
+            11,
+            33,
+            57,
+            216,
+            575,
+            2889,
+            3081,
+            4048,
+            4631,
+            3215,
+            3898,
+            4519,
+            5067,
+            3593,
+            4331,
+            2807,
+            2236,
+            1277,
+            1868,
+            1208,
+            475,
+            282,
+            255,
+            89,
+            13
+          ]
+        },
+        "loudness": {
+          "n": 50704,
+          "bin_edges": [
+            -60.0,
+            -57.94553333520889,
+            -55.891066670417786,
+            -53.83660000562668,
+            -51.78213334083557,
+            -49.727666676044464,
+            -47.67320001125336,
+            -45.61873334646225,
+            -43.56426668167114,
+            -41.509800016880035,
+            -39.45533335208893,
+            -37.40086668729782,
+            -35.346400022506714,
+            -33.29193335771561,
+            -31.2374666929245,
+            -29.183000028133392,
+            -27.128533363342285,
+            -25.074066698551178,
+            -23.01960003376007,
+            -20.965133368968964,
+            -18.910666704177856,
+            -16.85620003938675,
+            -14.801733374595642,
+            -12.747266709804535,
+            -10.692800045013428,
+            -8.63833338022232,
+            -6.583866715431213,
+            -4.529400050640106,
+            -2.474933385848999,
+            -0.42046672105789185,
+            1.633999943733215
+          ],
+          "counts": [
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            2,
+            2,
+            6,
+            5,
+            9,
+            14,
+            22,
+            45,
+            48,
+            68,
+            101,
+            122,
+            213,
+            266,
+            489,
+            928,
+            1726,
+            3307,
+            6552,
+            12189,
+            15623,
+            8089,
+            839,
+            32
+          ]
+        }
+      }
+    },
+    {
+      "id": "popularity_coverage",
+      "title": "Popularity and track coverage",
+      "caption": "Both panels count unique tracks. Popularity is the supplied estimate; play counts refer only to this mini log.",
+      "insight": "Popularity ranges from 90.02 to 100.00; the sample does not span an unrestricted music catalog.",
+      "alt": "Histogram of the supplied popularity estimate and bars of track coverage by observed play-count bucket.",
+      "image_path": "python/01_data_understanding/results/images/popularity_coverage.png",
+      "image_url": "../../python/01_data_understanding/results/images/popularity_coverage.png",
+      "data": {
+        "popularity": {
+          "bin_edges": [
+            90.0188995011263,
+            90.35160274386394,
+            90.68430598660156,
+            91.0170092293392,
+            91.34971247207683,
+            91.68241571481447,
+            92.01511895755209,
+            92.34782220028973,
+            92.68052544302736,
+            93.013228685765,
+            93.34593192850262,
+            93.67863517124026,
+            94.0113384139779,
+            94.34404165671553,
+            94.67674489945315,
+            95.00944814219079,
+            95.34215138492843,
+            95.67485462766606,
+            96.00755787040369,
+            96.34026111314132,
+            96.67296435587896,
+            97.00566759861658,
+            97.33837084135422,
+            97.67107408409186,
+            98.00377732682949,
+            98.33648056956712,
+            98.66918381230475,
+            99.00188705504239,
+            99.33459029778001,
+            99.66729354051765,
+            99.99999678325528
+          ],
+          "counts": [
+            35,
+            31,
+            25,
+            32,
+            53,
+            50,
+            47,
+            52,
+            52,
+            63,
+            64,
+            62,
+            91,
+            102,
+            112,
+            127,
+            145,
+            147,
+            197,
+            242,
+            309,
+            342,
+            461,
+            650,
+            809,
+            1134,
+            1752,
+            2971,
+            5995,
+            34552
+          ]
+        },
+        "play_count_buckets": [
+          {
+            "bucket": "1",
+            "tracks": 31823
+          },
+          {
+            "bucket": "2",
+            "tracks": 8104
+          },
+          {
+            "bucket": "3–4",
+            "tracks": 5380
+          },
+          {
+            "bucket": "5–9",
+            "tracks": 3164
+          },
+          {
+            "bucket": "10–49",
+            "tracks": 1921
+          },
+          {
+            "bucket": "50+",
+            "tracks": 312
+          }
+        ]
+      }
+    }
+  ],
+  "key_findings": [
+    {
+      "title": "Recorded sessions concentrate at the cap",
+      "text": "5,066 of 10,000 sessions (50.7%) are at the 20-track maximum."
+    },
+    {
+      "title": "Track rates need denominators",
+      "text": "31,823 tracks (62.8%) appear once. Their observed rates can only be 0% or 100%."
+    },
+    {
+      "title": "Popularity covers a narrow range",
+      "text": "Popularity ranges from 90.02 to 100.00; the sample does not span an unrestricted music catalog."
+    },
+    {
+      "title": "Empty profiles need explicit handling",
+      "text": "739 sessions have no non-skip_2 track in the first half."
+    }
+  ],
+  "reproduce": {
+    "command": "python3 python/01_data_understanding/analyze.py",
+    "requirements": "python/01_data_understanding/requirements.txt",
+    "python_minimum": "3.10",
+    "libraries": {
+      "pandas": "3.0.6",
+      "numpy": "2.5.4",
+      "matplotlib": "3.11.2"
+    }
+  }
+}

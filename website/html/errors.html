@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Error analysis · Skip prediction</title><link rel="stylesheet" href="../css/base.css"><script src="../js/site.js" defer></script><script src="../js/errors.js" defer></script></head>
+<body data-page="errors" data-base="../../" data-sources='{"final": "python/04_final_test/results/test_results.json", "errors": "python/05_error_analysis/results/error_analysis.json"}'>
+<main id="main">
+<p class="eyebrow">Error analysis</p><h1 class="page-title">Where and why the model is wrong</h1>
+<p class="section-intro">Everything on this page is for the boosted-tree model on the test sessions, with threshold <span data-v="final.threshold" data-fmt="raw"></span>. Looking at errors tells us what the model understands and what it misses.</p>
+<h2>The mistakes it makes</h2>
+<div id="confusion"></div>
+<p>A "false skip" is a song that was kept but the model said skip. A "false keep" is the opposite. Overall accuracy is <span data-v="final.primary_tuned.accuracy" data-fmt="pct"></span>.</p>
+<h2>Accuracy by position in the queue</h2>
+<figure><img src="../../python/05_error_analysis/results/by_position.png" alt="Accuracy by queue position"><figcaption>Accuracy by position in the prediction window, model against the copy-last rule.</figcaption></figure>
+<p id="position-text"></p>
+<p>The further a song is from the end of the history, the less the history tells us, so accuracy goes down.</p>
+<h2>Accuracy by how much the listener skipped in the first half</h2>
+<div id="by-history"></div>
+<p>When the first half is mixed (some skips, some kept), the history gives no clear direction. These are the hardest sessions. The model has little else to use, because audio features add little.</p>
+<h2>Accuracy by music source and by subscription</h2>
+<div id="by-context"></div><div id="by-premium"></div>
+<p>The model works about equally well for free and premium listeners. Accuracy differs a little between music sources.</p>
+<h2>Are the probabilities honest? (calibration)</h2>
+<figure><img src="../../python/05_error_analysis/results/calibration.png" alt="Calibration of predicted skip probability"><figcaption>Real skip rate against predicted probability. A perfect model follows the dashed line.</figcaption></figure>
+<p id="calibration-text"></p>
+<h2>Four real sessions</h2>
+<p>We picked these sessions by fixed rules, not by hand: the most confident false skip, the most confident false keep, a session where the listener changed behaviour, and a typical session.</p>
+<div id="examples"></div>
+<p>In these examples the model follows the first-half pattern. It cannot know that the listener changed mood in the second half. That is the main kind of mistake it makes.</p>
+</main>
+</body></html>

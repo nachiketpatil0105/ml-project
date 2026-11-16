@@ -1,0 +1,36 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Evaluation · Skip prediction</title><link rel="stylesheet" href="../css/base.css"><script src="../js/site.js" defer></script></head>
+<body data-page="evaluation" data-base="../../" data-sources='{"dev": "python/03_tuning/results/development.json", "final": "python/04_final_test/results/test_results.json"}'>
+<main id="main">
+<p class="eyebrow">Evaluation</p><h1 class="page-title">How we keep the comparison fair</h1>
+<p class="section-intro">We fixed the split and the scores before comparing models. The test sessions stay untouched until the very end.</p>
+<h2>The split</h2>
+<ul>
+<li><span data-v="dev.development_sessions" data-fmt="int"></span> sessions (<span data-v="dev.development_rows" data-fmt="int"></span> rows) are <strong>development data</strong>. We use them to train, tune and choose.</li>
+<li><span data-v="final.test_sessions" data-fmt="int"></span> sessions (<span data-v="final.test_rows" data-fmt="int"></span> rows) are the <strong>test set</strong>. We score each final model on it once.</li>
+<li>The split is by session, so all songs of a session are on the same side.</li>
+</ul>
+<h2>Checking inside the development data (K-fold cross-validation)</h2>
+<ul>
+<li><strong>K-fold.</strong> We cut the development sessions into 5 parts (folds). We train on 4 and check on the 5th, five times, so every part is used for checking once.</li>
+<li><strong>Grouped by session.</strong> A session is never split across folds.</li>
+<li><strong>Stratified.</strong> The folds have about the same share of skips, so no fold is easy or hard by chance.</li>
+<li><strong>Repeated.</strong> The search uses one fold split (seed <span data-v="dev.cv.search_seed" data-fmt="raw"></span>). The best candidates are scored again on three other fold splits (seeds 101, 102, 103). That makes 15 folds, and the final choice is made on their average. The development numbers in the results use these same repeated folds.</li>
+<li><strong>What this does and does not do.</strong> Cross-validation does not make a model more accurate. It makes our <em>choice</em> between models and settings more reliable. We did not use nested cross-validation because it is very slow. Instead, the final choice uses folds that the search did not use, which reduces (but does not remove) the chance that the search flatters the model.</li>
+</ul>
+<h2>The scores</h2>
+<ul>
+<li><strong>MAA (main score).</strong> For one session we guess T songs. After each guess we compute the accuracy so far, and we count it only if that guess was right. AA is the average of these numbers. MAA is the average of AA over all sessions. A right guess early in the queue is worth more, because a streaming service acts on the next songs first. This is the score of the original challenge.</li>
+<li><strong>First-prediction accuracy.</strong> How often the very next song is guessed right.</li>
+<li><strong>ROC AUC.</strong> How well the model ranks skipped songs above kept songs. It does not depend on a threshold.</li>
+<li><strong>Accuracy.</strong> The share of all rows guessed right. We show it only for context. It is not our decision criterion.</li>
+</ul>
+<div class="callout"><strong>A worked example of AA</strong><p>A session with 5 guesses: right, right, wrong, right, right. The accuracy after each guess is 1, 1, 0.67, 0.75, 0.80. We keep only the values after right guesses: 1, 1, 0, 0.75, 0.80. The average is (1 + 1 + 0 + 0.75 + 0.80) / 5 = 0.71. If the wrong guess came first instead, AA would be lower, because the early guess counts more.</p></div>
+<h2>The decision threshold</h2>
+<p>The model gives a probability of "skip". MAA needs a yes or no, so we need a threshold (normally 0.5). We tried 0.40 to 0.60 on the development scores. The best threshold was <strong><span data-v="derived.best_threshold" data-fmt="raw"></span></strong> and it improved MAA by only <span data-v="derived.threshold_gain" data-fmt="f4"></span>. Our rule is to move away from 0.5 only if the gain is more than 0.001. The threshold used for the test set is <strong><span data-v="final.threshold" data-fmt="raw"></span></strong>.</p>
+<h2>Uncertainty on the test set</h2>
+<p>We draw sessions with replacement 2,000 times and recompute the score each time. The spread gives a 95% interval for each score and for the difference between two models, using the same sessions for both. If an interval for a difference includes zero, we cannot say the two models differ.</p>
+<div class="callout"><strong>Why we resample sessions and not rows</strong><p>Songs in one session depend on each other. Resampling rows would make the intervals too narrow.</p></div>
+<h2>How the test set was used (full disclosure)</h2>
+<p>While building the pipeline, we scored the test sessions once with an earlier version (first half = floor(L/2), small hand-picked settings). LightGBM scored 0.562 and copy last skip 0.531. After that we changed the first-half rule to match the original challenge, and we replaced the small settings grids with the Optuna search, because the first test result was modest. The search and every choice used development data only. The Results page shows the final pipeline scoring the same test sessions once. We tell you about the first run so you can see exactly how the test set was used.</p>
+</main>
+</body></html>

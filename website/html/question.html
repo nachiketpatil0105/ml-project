@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Question and problem · Skip prediction</title><link rel="stylesheet" href="../css/base.css"><script src="../js/site.js" defer></script></head>
+<body data-page="question" data-base="../../" data-sources='{"final": "python/04_final_test/results/test_results.json"}'>
+<main id="main">
+<p class="eyebrow">Question and problem</p><h1 class="page-title">Can the first half of a session predict the skips in the second half?</h1>
+<p class="section-intro">In music streaming, a skip is a clear sign that the listener did not want a song. We ask how much of this behaviour can be predicted from what the same listener did earlier in the session.</p>
+<div class="callout"><strong>Research question</strong><p>Can classical machine learning models predict whether a user will skip upcoming tracks in a streaming session, using only the user&#x27;s interaction history from the first half of the session and the acoustic features of the upcoming tracks? Specifically, to what extent do behavioural momentum (recent skip patterns) and acoustic similarity to previously unskipped tracks explain skip decisions, compared with a static track-level signal such as popularity?</p></div>
+<div class="callout"><strong>Feature-based, not song-based</strong><p>The question is about behaviour and numeric song features. It is not about which song or which artist a person likes. The data has no titles or artists, and our models do not learn anything about a single song's identity.</p></div>
+<div class="two-column"><div class="panel"><h3>What the model sees</h3><ul><li>The listener's behaviour in the first half: skips, how songs started and ended, pauses, seeks, where the music came from, premium or free, shuffle, time of day.</li><li>For each upcoming song: numeric audio features, popularity, release year, length.</li><li>The position of the song in the queue, and how far it is (in audio terms) from the songs the listener kept or skipped.</li></ul></div>
+<div class="panel"><h3>What the model does not see</h3><ul><li>Song titles, artists or albums (they are not in the data).</li><li>A learned identity or "embedding" of a song or a listener.</li><li>Anything the listener did during the second half: skips, how songs ended, seeks or pauses.</li></ul></div></div>
+<h2>How the problem is set up</h2><div class="table-wrap"><table><caption>Problem definition</caption><thead><tr><th scope="col">Item</th><th scope="col">Definition</th></tr></thead><tbody><tr><td>One row</td><td>One song in the second half of a listening session. A session has L songs (10 to 20). The first K = ceil(L/2) songs are the history. The other L − K songs are predicted. Example: in a session of 11 songs, songs 1 to 6 are the history and songs 7 to 11 are predicted.</td></tr><tr><td>Target</td><td><code>skip_2</code>: the song was played only for a short time. The original challenge used this field as the answer. It is true for <span data-v="final.test_skip_rate" data-fmt="pct"></span> of the rows in the test sessions.</td></tr><tr><td>When we predict</td><td>After the first half is over and before the second half starts. All second-half songs are predicted at once, from the same history.</td></tr><tr><td>What is known at that time</td><td>Everything the listener did in the first half, the numeric features of every upcoming song, and the position of each song in the queue.</td></tr><tr><td>What is not known</td><td>Anything about how the listener treats the second-half songs.</td></tr></tbody></table></div>
+<h2>What would be a useful answer</h2>
+<p>A clear gain in the main score (MAA) over simple rules, on sessions the models never saw. We also want to know which kind of information gives the gain: popularity, listening history, or audio similarity. Our claim is about prediction only. A model that predicts skips well does not explain why people skip.</p>
+<p class="source-note">The 10,000 sessions are a sample and have no user ID. The session is our unit of analysis, so the results say nothing about individual people.</p>
+<h2>Key terms in plain words</h2>
+<dl class="keyterms">
+<dt>Session</dt><dd>One listening period of 10 to 20 songs.</dd>
+<dt>Skip (skip_2)</dt><dd>The listener moved on after only a short part of the song.</dd>
+<dt>History and prediction window</dt><dd>The first half of a session (we know it) and the second half (we predict it).</dd>
+<dt>Feature</dt><dd>A number that describes something, for example "share of songs skipped so far" or "energy of this song".</dd>
+<dt>Baseline</dt><dd>A very simple rule that a real model must beat to be worth using.</dd>
+<dt>Boosted trees</dt><dd>Many small decision trees added one after another. Each new tree tries to fix the mistakes of the earlier ones.</dd>
+<dt>Data leakage</dt><dd>Using information that would not be known at prediction time. It makes results look better than they really are.</dd>
+<dt>Cross-validation (K-fold)</dt><dd>Split the training data into K parts. Train on K−1 parts and check on the last part. Repeat so that every part is used for checking once.</dd>
+<dt>MAA</dt><dd>Mean Average Accuracy. The main score. It rewards right guesses, and early guesses count more.</dd>
+</dl>
+</main>
+</body></html>

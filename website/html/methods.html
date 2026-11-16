@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Baselines and methods · Skip prediction</title><link rel="stylesheet" href="../css/base.css"><script src="../js/site.js" defer></script><script src="../js/methods.js" defer></script></head>
+<body data-page="methods" data-base="../../" data-sources='{"dev": "python/03_tuning/results/development.json"}'>
+<main id="main">
+<p class="eyebrow">Baselines and methods</p><h1 class="page-title">Simple rules first, then three kinds of models</h1>
+<p class="section-intro">We add one idea at a time. A more complex model is kept only if it clearly beats the simpler one on validation data.</p>
+<h2>Baselines (simple rules)</h2>
+<ul>
+<li><strong>Training-label majority.</strong> Always guess the more common answer in the training data. It uses no information about the session. It is the floor.</li>
+<li><strong>First-half skip majority.</strong> Guess "skip" if more than half of the history songs were skipped, otherwise "keep".</li>
+<li><strong>Copy last skip.</strong> Guess that the next songs will be treated like the last history song. This tests how much a session "keeps going the same way". It is the strongest simple rule, so we compare every model with it.</li>
+<li><strong>Popularity only.</strong> A logistic regression that uses only the popularity of the song. It shows how much a fixed song property helps.</li>
+</ul>
+<h2>Models that learn</h2>
+<h3>1. Logistic regression (popularity + history)</h3>
+<p><em>Idea:</em> a straight-line score from the inputs, turned into a probability. <em>Why we use it:</em> it is simple and easy to explain. It shows how much the history alone can explain without any audio features and without complex patterns. We choose its strength of regularisation (C) with cross-validation.</p>
+<div id="lr-grid"></div>
+<h3>2. Random forest</h3>
+<p><em>Idea:</em> many decision trees, each trained on a random sample, whose votes are averaged. <em>Why we use it:</em> it can find patterns that combine features, for example "many recent skips and a song that sounds very different from the kept songs", and it is hard to overfit by accident. It uses all four feature groups.</p>
+<div id="rf-grid"></div>
+<h3>3. Boosted trees (our main model family)</h3>
+<p><em>Idea:</em> trees are added one by one. Each new tree is trained to fix the mistakes of the trees before it. <em>Why we use it:</em> this is usually the best classical method for tables of numbers like ours, and published solutions of this challenge used it too. The proposal named "boosted trees" without a library, so we compare the three common ones on exactly the same data and folds: LightGBM, XGBoost and CatBoost.</p>
+<h3>How we chose the boosting settings</h3>
+<p>Boosted trees have many settings (number of trees, tree size, learning speed and so on). Trying them by hand is slow and unfair. We used <strong>Optuna</strong>, a tool that tries settings one after another and learns which ranges work well. Steps:</p>
+<ol class="steps">
+<li>For each library we ran 40 trials. Each trial is scored with 5-fold cross-validation on the development sessions only. The score is MAA.</li>
+<li>Trial 0 is the setting we used before the search, so the search can only improve on it.</li>
+<li>The five best trials are scored again on three <em>new</em> fold splits (15 folds in total). The final choice is made on that second score, because it is less affected by one lucky split.</li>
+<li>Settings within 0.001 MAA of the best are treated as equal, and the smaller model wins. Among libraries within 0.001, we pick LightGBM, because its trees are easy to export for the explorer.</li>
+</ol>
+<img src="../../python/03_tuning/results/optuna_history.png" alt="Best search MAA so far, by Optuna trial, for each library" style="max-width:100%;height:auto;border:1px solid var(--line)">
+<p class="source-note">Best search score found so far, trial by trial. The curves go flat quickly: the models are not very sensitive to their settings.</p>
+<div id="space-table"></div>
+<div id="top-lightgbm"></div><div id="top-xgboost"></div><div id="top-catboost"></div>
+<h3>All final choices</h3>
+<div id="chosen-table"></div>
+</main>
+</body></html>

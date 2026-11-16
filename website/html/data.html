@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Data · Skip prediction</title><link rel="stylesheet" href="../css/base.css"><link rel="stylesheet" href="../css/data.css"><script src="../js/site.js" defer></script><script src="../js/data.js" defer></script></head>
+<body data-page="data" data-base="../../" data-sources='{}'>
+<main id="main">
+<div class="callout"><strong>In one paragraph</strong><p>We use the mini part of the Music Streaming Sessions Dataset (Spotify, WSDM Cup 2019). It has two tables. The session log has one row per song played (about 168,000 rows in 10,000 sessions). The track table has one row per song with numeric audio features (about 50,000 songs). The log tells us what the listener did. The track table tells us what each song is like in numbers. The sections below show the source, size, key variables and quality checks, with plots.</p></div>
+    
+    <section class="section data-hero" aria-labelledby="page-title">
+      <p class="eyebrow">02 / Data</p>
+      <h1 id="page-title" class="page-title">The Music Streaming Sessions data</h1>
+      <p class="section-intro">What the data contains, how listening varies, and which quality issues matter for the question.</p>
+      <p id="load-status" role="status" aria-live="polite">Loading the analysis…</p>
+      <button id="retry-load" type="button" class="button primary" hidden>Try again</button>
+      <noscript><p>This page requires JavaScript to load the analysis. You can <a href="../../python/01_data_understanding/results/data_understanding.json">read the results JSON directly</a>.</p></noscript>
+      <div id="overview-stats" class="stats" aria-label="Dataset size"></div>
+      <p id="coverage" class="source-note"></p>
+    </section>
+    <div id="analysis-content" hidden>
+      <section class="section" aria-labelledby="source-title">
+        <p class="eyebrow">SOURCE</p><h2 id="source-title">Two tables</h2>
+        <div id="input-tables" class="two-column"></div>
+        <p id="join-note" class="source-note"></p>
+        <div id="source-links" class="source-links"></div>
+        <details class="spaced"><summary>Access and sampling limitations</summary><ul id="access-limits" class="detail-list"></ul></details>
+      </section>
+      <section class="section" aria-labelledby="target-title">
+        <div class="section-heading"><div><p class="eyebrow">TARGET</p><h2 id="target-title">What counts as a skip?</h2></div><div class="select-control"><label for="target-select">Explore a label</label><select id="target-select"><option value="skip_2">skip_2 · Project target</option><option value="skip_1">skip_1 · Alternative threshold</option><option value="skip_3">skip_3 · Alternative threshold</option><option value="not_skipped">not_skipped · Complete playback</option></select></div></div>
+        <div class="label-explorer"><div><span class="eyebrow" id="label-name">skip_2</span><strong id="label-rate" class="large-number"></strong><p id="label-count"></p></div><div><p id="label-meaning"></p><meter id="label-meter" min="0" max="1" value="0" aria-label="Fraction of plays with the selected label true"></meter><p class="source-note">Share of labelled track plays where the selected indicator is true. These indicators are not mutually exclusive categories.</p></div></div>
+        <aside class="callout"><strong>Keep definitions separate.</strong><p id="definition-note"></p></aside>
+      </section>
+      <section class="section" aria-labelledby="plots-title">
+        <p class="eyebrow">PLOTS</p><h2 id="plots-title">Plots</h2>
+        <p class="section-intro">Choose a view to inspect its plot, population, and interpretation. Computed from our mini dataset using <code>skip_2</code>.</p>
+        <div class="chart-toolbar"><label for="chart-select">Choose a plot</label><select id="chart-select"></select><span id="chart-position"></span></div>
+        <figure class="chart-card" aria-labelledby="chart-title"><figcaption><h3 id="chart-title"></h3><p id="chart-caption"></p></figcaption><a id="chart-open" target="_blank" rel="noopener" aria-label="Open current chart at full size"><img id="chart-image" alt=""></a><div class="chart-insight"><span>READING THIS PLOT</span><p id="chart-insight"></p></div><a id="chart-download" download>Download plot ↓</a></figure>
+        <div id="key-findings" class="findings-grid"></div>
+      </section>
+      <section class="section" aria-labelledby="variables-title">
+        <div class="section-heading"><div><p class="eyebrow">VARIABLES</p><h2 id="variables-title">Variables and when they are available</h2></div><div class="select-control"><label for="variable-search">Find a variable</label><input id="variable-search" type="search" placeholder="Try skip, context, acoustic…"></div></div>
+        <p class="section-intro">The <code>hist_</code> prefix does not make future rows safe. Interaction fields for a track being predicted remain unavailable.</p>
+        <p id="variable-count" class="source-note" role="status"></p>
+        <div class="table-wrap"><table><caption class="sr-only">Important variables and their relevance to prediction</caption><thead><tr><th scope="col">Variable / group</th><th scope="col">Meaning</th><th scope="col">Use and caution</th></tr></thead><tbody id="variable-rows"></tbody></table></div>
+      </section>
+      <section class="section" aria-labelledby="quality-title">
+        <p class="eyebrow">QUALITY</p><h2 id="quality-title">Data quality</h2>
+        <p id="quality-status" class="section-intro"></p><div id="quality-stats" class="quality-stats"></div>
+        <div id="quality-issues" class="issues-grid"></div>
+        <p id="quality-action" class="source-note"></p>
+      </section>
+      <section class="section" aria-labelledby="scope-title">
+        <p class="eyebrow">SCOPE</p><h2 id="scope-title">Scope</h2>
+        <p id="scope-note" class="section-intro"></p>
+        <aside class="callout"><strong>Before modelling</strong><p id="scope-caveat"></p></aside>
+        <div class="reproduce-box"><p>Regenerate the analysis from the project root:</p><pre><code id="run-command"></code></pre><p class="source-note">Install the dependencies listed in <a href="../../python/01_data_understanding/requirements.txt">requirements.txt</a>. The script produces these plots and the JSON consumed by this page.</p><div class="resource-links"><a href="../../python/01_data_understanding/results/data_understanding.json" download>Results JSON ↓</a><a href="../../python/01_data_understanding/analyze.py">Analysis script ↗</a><a href="../../python/01_data_understanding/README.md">Run instructions ↗</a></div><p id="generated-note" class="source-note"></p></div>
+      </section>
+    </div>
+    
+</main>
+</body></html>

@@ -1,0 +1,48 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Reproduction, repository and credits · Skip prediction</title><link rel="stylesheet" href="../css/base.css"><script src="../js/site.js" defer></script></head>
+<body data-page="reproduction" data-base="../../" data-sources='{}'>
+<main id="main">
+<p class="eyebrow">Reproduction, repository and credits</p><h1 class="page-title">Check and reproduce everything</h1>
+<p class="section-intro">The website shows the main reasoning, figures and tables. The repository has the code, the exact splits and all results so that you can check them.</p>
+<p data-if="config.repository_url"><strong>Repository:</strong> <a data-href="config.repository_url" data-v="config.repository_url"></a></p>
+<p data-ifnot="config.repository_url" class="source-note">Repository link: add <code>repository_url</code> to <code>site_config.json</code> and it will appear here.</p>
+<h2>Data access</h2>
+<p>We use the mini part of the Music Streaming Sessions Dataset (Brost et al., WWW 2019), released for the WSDM Cup 2019. The official download is no longer offered, so we took the two files from the public archive <code>github.com/suhani6/spotify-skip-analysis</code>. They are in the <code>data/</code> folder: <code>log_mini.csv</code> (session log) and <code>tf_mini.csv</code> (track features). No script changes them.</p>
+<h2>Steps to run</h2>
+<p>Run these from the project folder. Python 3.10 or newer.</p>
+<pre><code>python3 -m pip install -r requirements.txt
+python3 python/01_data_understanding/analyze.py
+python3 python/02_preprocessing/make_split.py
+python3 python/02_preprocessing/describe_features.py
+python3 -m unittest discover -s python/02_preprocessing -v
+python3 python/03_tuning/run_experiments.py --trials 40 --top 5
+python3 python/03_tuning/make_plots.py
+python3 python/04_final_test/run_final.py
+python3 python/04_final_test/make_plots.py
+python3 python/05_error_analysis/analyze_errors.py
+python3 python/05_error_analysis/make_plots.py
+python3 python/06_explorer/export_explorer.py
+python3 -m http.server</code></pre>
+<p>Then open the address that <code>http.server</code> prints. Step 3 is the slow one (about 30 to 90 minutes). It saves its progress, so you can stop and continue. We used scripts instead of notebooks: each script is short and prints what it does. Setting <code>QUICK=1</code> runs any step on a small subset into a <code>results_quick</code> folder, as a smoke test.</p>
+<h2>Which script makes which result file</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Step</th><th scope="col">Script</th><th scope="col">Result files (in its own results folder)</th><th scope="col">Shown on</th></tr></thead><tbody><tr><td>1 Data understanding</td><td><code>python/01_data_understanding/analyze.py</code></td><td>data_understanding.json, images/</td><td>Data</td></tr><tr><td>2 Preprocessing</td><td><code>python/02_preprocessing/make_split.py</code><br><code>describe_features.py</code></td><td>session_split.json (the exact split), feature_summary.json (allowed columns, counts), features_preview.csv</td><td>Preprocessing</td></tr><tr><td>3 Tuning and comparison (development data only)</td><td><code>python/03_tuning/run_experiments.py</code></td><td>development.json, frozen_config.json (the choices), cv_folds.json (exact folds), development_oof_primary.csv, stages/, optuna.db (all trials), plots</td><td>Baselines and methods, Results</td></tr><tr><td>4 Final test (once)</td><td><code>python/04_final_test/run_final.py</code></td><td>test_results.json, test_predictions.csv, lightgbm_model.txt, plot</td><td>Results</td></tr><tr><td>5 Error analysis</td><td><code>python/05_error_analysis/analyze_errors.py</code></td><td>error_analysis.json, plots</td><td>Error analysis</td></tr><tr><td>6 Explorer</td><td><code>python/06_explorer/export_explorer.py</code></td><td>model.json, sessions.json</td><td>Results (explorer)</td></tr><tr><td>Shared code</td><td><code>python/shared/</code></td><td>features, models, metrics, cross-validation helpers, paths</td><td>–</td></tr></tbody></table></div>
+<h2>Exact preprocessing and splits</h2>
+<ul>
+<li>Feature code: <code>python/shared/features.py</code>. The list of allowed input columns: <code>python/02_preprocessing/results/feature_summary.json</code>.</li>
+<li>Split: 80/20 by session with seed 42, saved in <code>python/02_preprocessing/results/session_split.json</code>. Fold assignments of the cross-validation (4 seeds): <code>python/03_tuning/results/cv_folds.json</code>.</li>
+<li>All Optuna trials are in <code>python/03_tuning/results/optuna.db</code> and summarised in <code>development.json</code>.</li>
+</ul>
+<h2>AI-use disclosure</h2>
+<p>We used Claude (Anthropic) as a coding and writing assistant. It suggested the feature set, the comparison of LightGBM, XGBoost and CatBoost, the threshold rule and the explorer. It wrote the code in this repository and drafted the text of these pages, and it looked up published solutions of the challenge. We set the research question and the proposal, decided the first-half rule, the search method and the validation method, reviewed and approved each change, and we are responsible for this submission. All numbers on this site come from the scripts in the repository.</p>
+<h2>References</h2>
+<ul>
+<li>Brost, B., Mehrotra, R., Jehan, T. The Music Streaming Sessions Dataset. WWW 2019. WSDM Cup 2019 Spotify Sequential Skip Prediction Challenge, <a href="https://www.aicrowd.com/challenges/spotify-sequential-skip-prediction-challenge">AIcrowd</a> (states that skip_2 is the answer to predict).</li>
+<li>Ferraro et al. Skip prediction using boosting trees based on acoustic features of tracks in sessions. <a href="https://arxiv.org/abs/1903.11833">arXiv:1903.11833</a>, 2019.</li>
+<li>Béres, F., Kelen, D. M., Benczúr, A. A. Sequential skip prediction using deep learning and ensembles. WSDM Cup 2019 (team Definitive Turtles), <a href="https://core.ac.uk/download/228079504.pdf">core.ac.uk/download/228079504.pdf</a>.</li>
+<li>Modelling Sequential Music Track Skips using a Multi-RNN Approach. <a href="https://arxiv.org/abs/1903.08408">arXiv:1903.08408</a>, 2019.</li>
+<li>Adapa, S. Sequential modeling of sessions using recurrent neural networks for skip prediction. <a href="https://arxiv.org/abs/1904.10273">arXiv:1904.10273</a>, 2019 (definitions of skip_1, skip_2, skip_3).</li>
+<li>Akiba et al. Optuna: A next-generation hyperparameter optimization framework. KDD 2019. Ke et al. LightGBM. NeurIPS 2017. Chen and Guestrin. XGBoost. KDD 2016. Prokhorenkova et al. CatBoost. NeurIPS 2018. Pedregosa et al. Scikit-learn. JMLR 2011.</li>
+</ul>
+<h2>Publishing on GitHub Pages</h2>
+<p>The site is plain HTML, CSS and JavaScript. Push the repository to GitHub and turn on Pages for the root of the main branch. No server code is needed: the pages read the result files directly from the <code>python/*/results</code> folders.</p>
+</main>
+</body></html>

@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Results and explorer · Skip prediction</title><link rel="stylesheet" href="../css/base.css"><script src="../js/site.js" defer></script><script src="../js/results.js" defer></script><script src="../js/whatif.js" defer></script></head>
+<body data-page="results" data-base="../../" data-sources='{"final": "python/04_final_test/results/test_results.json", "dev": "python/03_tuning/results/development.json"}'>
+<main id="main">
+<p class="eyebrow">Results</p><h1 class="page-title">Results on the test sessions</h1>
+<p class="section-intro">The boosted-tree model (LightGBM) reaches a test MAA of <span data-v="final.primary_tuned.maa" data-fmt="f3"></span> (95% interval <span data-v="final.primary_tuned.ci.low" data-fmt="f3"></span> to <span data-v="final.primary_tuned.ci.high" data-fmt="f3"></span>). The best simple rule, copy last skip, reaches <span data-v="final.rows[id=copy_last].maa" data-fmt="f3"></span>. The model is better by <span data-v="final.comparisons_vs_primary_tuned.copy_last.difference" data-fmt="f3"></span>, and this gain is larger than the sampling noise. It is a clear but moderate gain, not a huge one.</p>
+<div id="model-table"></div>
+<figure><img src="../../python/04_final_test/results/model_comparison.png" alt="Test MAA of every model with bootstrap intervals"><figcaption>Test MAA with 95% intervals. The dashed line is the copy-last rule.</figcaption></figure>
+<h2>Is the difference real?</h2>
+<p>The table compares the boosted-tree model with each other model, session by session. "Clearly better" means the 95% interval is above zero.</p>
+<div id="compare-table"></div>
+<p>The model is clearly better than every simple rule and than the logistic regression, and also better than the random forest (the interval is above zero, but the gain is only about <span data-v="final.comparisons_vs_primary_tuned.random_forest.difference" data-fmt="f3"></span>). The three boosting libraries are only <span data-v="derived.lib_spread" data-fmt="f4"></span> apart (<span data-v="derived.lib_min" data-fmt="f4"></span> to <span data-v="derived.lib_max" data-fmt="f4"></span>). The 95% interval is about ± <span data-v="derived.ci_half" data-fmt="f3"></span>, so we cannot say that one library is better than another. The development estimate for the model was <span data-v="derived.dev_primary" data-fmt="f3"></span>. The test score is about <span data-v="derived.dev_minus_test" data-fmt="f3"></span> lower. The two use different sessions, and the gap is inside the test interval.</p>
+<h2>Which kind of information matters?</h2>
+<p>We trained the same LightGBM settings with different groups of inputs. This uses the development data only (15 folds).</p>
+<div id="ablation-table"></div>
+<figure><img src="../../python/03_tuning/results/ablation.png" alt="Development MAA by feature group"><figcaption>Development MAA for each set of inputs (bars: spread between folds). The dashed line is the copy-last rule.</figcaption></figure>
+<ul>
+<li><strong>Popularity alone is almost useless.</strong> Its AUC is <span data-v="derived.ab.P.roc_auc" data-fmt="f3"></span> (0.5 means no signal). Its MAA (<span data-v="derived.ab.P.mean_fold_maa" data-fmt="f3"></span>) is even below the majority rule (<span data-v="dev.selected.global_majority.mean_fold_maa" data-fmt="f3"></span>), because MAA also punishes guesses that change back and forth without a real signal.</li>
+<li><strong>Listening history gives almost everything.</strong> History alone already gives <span data-v="derived.ab.H.mean_fold_maa" data-fmt="f3"></span>.</li>
+<li><strong>Similarity and audio add very little.</strong> Adding similarity changes the score by <span data-v="derived.delta_S" data-fmt="s4"></span> and adding audio by <span data-v="derived.delta_A" data-fmt="s4"></span>. The spread between folds is <span data-v="derived.fold_sd" data-fmt="f4"></span>, which is larger than both changes. So we cannot say that audio or similarity features help in this study.</li>
+</ul>
+<h3>Share of the final model's learning that comes from each group</h3>
+<ul id="importance-list"></ul>
+<p>The most used single features are:</p>
+<ul id="top-features"></ul>
+<p>Names starting with <code>re_</code> describe how the first-half songs <em>ended</em> (for example, <code>re_trackdone</code> is the share of history songs that played to the end). A song that played to the end was not skipped, so these features carry the same information as the skip history. They are allowed, because they come from the first half only.</p>
+<h2>Try it yourself: change the first half</h2>
+<p>Choose one of 24 test sessions. Click the squares of the first half to change a song between "kept" and "skip". The page then recalculates the skip probability of every upcoming song with the real model (the trees are loaded into your browser). We recalculate everything that depends on the skip pattern: skip rate, last skips, skip streak, and the distances to kept and skipped songs. All other inputs (how songs ended, pauses, where the music came from, audio features) keep their recorded values. So this shows how sensitive the model is to the skip pattern. It does not tell you what a real listener would do.</p>
+<p id="wi-status" role="status">Loading the model…</p>
+<div id="wi-app" hidden>
+<div class="wi-controls"><label for="wi-session">Session</label><select id="wi-session"></select><button type="button" id="wi-reset" class="button primary">Restore recorded history</button></div>
+<p class="source-note">First half: click a square to switch between kept and skip.</p>
+<div id="wi-history" class="wi-history"></div>
+<p id="wi-note" role="status" class="source-note"></p>
+<div class="wi-layout"><div class="table-wrap"><table><caption>Upcoming songs (click a song to see its audio profile)</caption><thead><tr><th scope="col">Song</th><th scope="col" class="num">Recorded p(skip)</th><th scope="col" class="num">Edited p(skip)</th><th scope="col">Prediction</th><th scope="col">Actual</th><th scope="col" class="num">Change</th></tr></thead><tbody id="wi-rows"></tbody></table></div>
+<div><div id="wi-radar"></div><div id="wi-legend" class="source-note"></div></div></div></div>
+</main>
+</body></html>
