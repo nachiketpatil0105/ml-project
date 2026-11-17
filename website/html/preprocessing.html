@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Preprocessing · Skip prediction</title><link rel="stylesheet" href="../css/base.css"><script src="../js/site.js" defer></script><script src="../js/preprocessing.js" defer></script></head>
-<body data-page="preprocessing" data-base="../../" data-sources='{"prep": "python/02_preprocessing/results/feature_summary.json"}'>
+<body data-page="preprocessing" data-base="../../" data-sources='{"prep": "python/02_preprocessing/results/feature_summary.json", "extra": "python/07_extra_experiments/results/extra_experiments.json"}'>
 <main id="main">
 <p class="eyebrow">Preprocessing</p><h1 class="page-title">From sessions to model inputs</h1>
 <p class="section-intro">Preprocessing means turning the raw tables into numbers a model can use. The most important rule: a row may only use things that would be known at the time of the prediction.</p>
@@ -26,13 +26,14 @@
 <li>History features read only the first K rows of a session.</li>
 <li>We tried a "skip rate of each song across other sessions" feature. It did not help and would need extra care to be safe, so we dropped it.</li>
 </ul>
-<h2>Other things we tried (exploratory)</h2>
-<p>These small runs used development folds only and an earlier version of the pipeline (first half = floor(L/2)). They were done by hand and are <strong>not scripted</strong>, so the numbers are notes and cannot be re-created from the repository. They did not change the final features, except the last one, which is why the start and end reason features are kept.</p>
+<h2>Other things we tried</h2>
+<p>Early in the project we tried a few extra features by hand with an earlier version of the pipeline. Those hand runs could not be re-created, so we re-ran every one of them with a script on the final pipeline: <code>python/07_extra_experiments/run_extra.py</code>. Each run uses the final LightGBM settings and the same 15 development folds; only one thing changes. The full table is on the <a href="team.html#change-table">Team and contributions</a> page.</p>
 <ul>
-<li>A per-song skip-rate feature (how often each song is skipped in other sessions) lowered MAA from 0.577 to 0.574 and was dropped.</li>
-<li>Features from <code>skip_1</code> and <code>skip_3</code>, and per-session changes in audio features, each changed MAA by less than 0.001 and were dropped.</li>
-<li>Removing the shares of start and end reasons lowered MAA from 0.577 to 0.560, so these features were kept.</li>
+<li>A per-song skip rate (how often the song is skipped in other sessions, rebuilt inside every training fold): MAA <span data-v="extra.experiments[id=add_song_skip_rate].mean_fold_maa" data-fmt="f4"></span> against <span data-v="extra.base.mean_fold_maa" data-fmt="f4"></span> for the final model (change <span data-v="extra.experiments[id=add_song_skip_rate].delta_maa" data-fmt="s4"></span>).</li>
+<li>History features from <code>skip_1</code> and <code>skip_3</code>: change <span data-v="extra.experiments[id=add_skip1_skip3].delta_maa" data-fmt="s4"></span>. Per-session audio deltas (song minus first-half mean): change <span data-v="extra.experiments[id=add_audio_deltas].delta_maa" data-fmt="s4"></span>.</li>
+<li>Removing the shares of start and end reasons: change <span data-v="extra.experiments[id=drop_reason_shares].delta_maa" data-fmt="s4"></span>.</li>
 </ul>
+<p>For scale, the spread of the final model between folds is <span data-v="extra.base.std_fold_maa" data-fmt="f4"></span>.</p>
 <p class="source-note">Honest note: we made descriptive plots of the whole mini dataset (the Data page) before fixing the split. No model choice was made from those plots.</p>
 </main>
 </body></html>

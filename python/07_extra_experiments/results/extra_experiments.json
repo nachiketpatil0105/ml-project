@@ -1,0 +1,204 @@
+{
+ "primary": "lightgbm",
+ "params": {
+  "n_estimators": 650,
+  "learning_rate": 0.010741162635527697,
+  "num_leaves": 27,
+  "min_child_samples": 57,
+  "subsample": 0.8647203097094898,
+  "colsample_bytree": 0.883492409820672,
+  "reg_lambda": 1.8002674087200576,
+  "reg_alpha": 0.053370875323655885
+ },
+ "base": {
+  "mean_fold_maa": 0.5823028602568563,
+  "std_fold_maa": 0.005526706311462855,
+  "mean_fold_first_accuracy": 0.7715905628187868,
+  "roc_auc": 0.744644812432985,
+  "rows": 66183
+ },
+ "folds": "5-fold StratifiedGroupKFold by session, seeds [101, 102, 103] (15 folds)",
+ "experiments": [
+  {
+   "id": "drop_A",
+   "change": "Drop the audio and metadata features",
+   "kind": "remove",
+   "mean_fold_maa": 0.582768642977437,
+   "std_fold_maa": 0.006093733621480346,
+   "mean_fold_first_accuracy": 0.7728023911470766,
+   "roc_auc": 0.7450603224365416,
+   "delta_maa": 0.0004657827205807319,
+   "why": "Tests whether group A adds anything beyond the others.",
+   "paired": {
+    "mean": 0.0004657827205807985,
+    "sd": 0.0019309012374052223,
+    "folds_better": 11,
+    "folds": 15
+   }
+  },
+  {
+   "id": "drop_S",
+   "change": "Drop the similarity features",
+   "kind": "remove",
+   "mean_fold_maa": 0.5812754397886656,
+   "std_fold_maa": 0.0054671624224190505,
+   "mean_fold_first_accuracy": 0.7714701074402059,
+   "roc_auc": 0.7427030794480265,
+   "delta_maa": -0.0010274204681907095,
+   "why": "Tests whether group S adds anything beyond the others.",
+   "paired": {
+    "mean": -0.0010274204681907466,
+    "sd": 0.002224457094195839,
+    "folds_better": 6,
+    "folds": 15
+   }
+  },
+  {
+   "id": "drop_P",
+   "change": "Drop the popularity features",
+   "kind": "remove",
+   "mean_fold_maa": 0.58246345095959,
+   "std_fold_maa": 0.006486320735897842,
+   "mean_fold_first_accuracy": 0.7711741458271009,
+   "roc_auc": 0.7440850965328925,
+   "delta_maa": 0.00016059070273366505,
+   "why": "Tests whether group P adds anything beyond the others.",
+   "paired": {
+    "mean": 0.00016059070273367985,
+    "sd": 0.0015456248365476584,
+    "folds_better": 7,
+    "folds": 15
+   }
+  },
+  {
+   "id": "drop_reason_shares",
+   "change": "Drop the start/end reason shares (rs_*, re_*)",
+   "kind": "remove",
+   "mean_fold_maa": 0.5800065092793341,
+   "std_fold_maa": 0.006014604539089355,
+   "mean_fold_first_accuracy": 0.7711800333508122,
+   "roc_auc": 0.7402543550448165,
+   "delta_maa": -0.0022963509775222324,
+   "why": "These shares repeat the skip history in another form; this checks how much the model leans on them.",
+   "paired": {
+    "mean": -0.002296350977522262,
+    "sd": 0.0027934293789179114,
+    "folds_better": 2,
+    "folds": 15
+   }
+  },
+  {
+   "id": "add_skip1_skip3",
+   "change": "Add skip_1 / skip_3 history features",
+   "kind": "add",
+   "mean_fold_maa": 0.5821139109329232,
+   "std_fold_maa": 0.0055939055404099595,
+   "mean_fold_first_accuracy": 0.7719694520926916,
+   "roc_auc": 0.7446845950080269,
+   "delta_maa": -0.00018894932393309638,
+   "why": "skip_1 and skip_3 are stricter and looser skip definitions; they are close copies of skip_2.",
+   "paired": {
+    "mean": -0.0001889493239332074,
+    "sd": 0.0018824017523698534,
+    "folds_better": 7,
+    "folds": 15
+   }
+  },
+  {
+   "id": "add_audio_deltas",
+   "change": "Add per-session audio deltas (song minus first-half mean)",
+   "kind": "add",
+   "mean_fold_maa": 0.5822742462076327,
+   "std_fold_maa": 0.005226625904835359,
+   "mean_fold_first_accuracy": 0.771047955308703,
+   "roc_auc": 0.744707898527064,
+   "delta_maa": -2.861404922360755e-05,
+   "why": "Tests whether 'how different is this song from what was played' helps beyond the existing distances.",
+   "paired": {
+    "mean": -2.8614049223563143e-05,
+    "sd": 0.0014640969058303118,
+    "folds_better": 7,
+    "folds": 15
+   }
+  },
+  {
+   "id": "add_song_skip_rate",
+   "change": "Add a per-song skip rate from other sessions",
+   "kind": "add",
+   "mean_fold_maa": 0.5804410421689155,
+   "std_fold_maa": 0.005260578374300856,
+   "mean_fold_first_accuracy": 0.771843874425309,
+   "roc_auc": 0.7429488251494064,
+   "delta_maa": -0.0018618180879408364,
+   "why": "Learned inside each training fold, leaving the row's own session out. About 7 in 10 songs appear in only one session, so for many rows the rate is close to the overall skip rate.",
+   "paired": {
+    "mean": -0.0018618180879408067,
+    "sd": 0.0018688633502628679,
+    "folds_better": 2,
+    "folds": 15
+   }
+  },
+  {
+   "id": "model_logistic",
+   "change": "Replace LightGBM by logistic regression (popularity + history)",
+   "kind": "model",
+   "mean_fold_maa": 0.5650469817150111,
+   "std_fold_maa": 0.0038946980520868538,
+   "mean_fold_first_accuracy": 0.7467562141405334,
+   "roc_auc": 0.7100248047752921,
+   "delta_maa": -0.017255878541845182,
+   "why": "Same folds; shows how much the non-linear model adds.",
+   "paired": {
+    "mean": -0.017255878541845026,
+    "sd": 0.003907774799800838,
+    "folds_better": 0,
+    "folds": 15
+   }
+  },
+  {
+   "id": "rule_floor",
+   "change": "First half = floor(L/2) instead of ceil(L/2)",
+   "kind": "rule",
+   "mean_fold_maa": 0.5776303811716458,
+   "std_fold_maa": 0.006830727633735017,
+   "mean_fold_first_accuracy": 0.7739183845458782,
+   "roc_auc": 0.7418849107055246,
+   "delta_maa": -0.0046724790852105125,
+   "why": "Odd-length sessions get one more song to predict and one fewer history song. The rows differ, so this is not a paired comparison.",
+   "rows": 68085
+  }
+ ],
+ "threshold": {
+  "chosen": 0.5,
+  "best": 0.5,
+  "maa_at_0.5": 0.5840091911926808,
+  "maa_at_best": 0.5840091911926808,
+  "gain": 0.0,
+  "rule": "move away from 0.5 only if the gain is at least 0.001",
+  "curve": {
+   "0.4": 0.5674723619771983,
+   "0.41": 0.5693150163572372,
+   "0.42": 0.5713811651037729,
+   "0.43": 0.5742197544642856,
+   "0.44": 0.5767678964907723,
+   "0.45": 0.5786714411296925,
+   "0.46": 0.5802156098041069,
+   "0.47": 0.5813760730820106,
+   "0.48": 0.5824287872417485,
+   "0.49": 0.5834190999976379,
+   "0.5": 0.5840091911926808,
+   "0.51": 0.5832692100891282,
+   "0.52": 0.5834120527250252,
+   "0.53": 0.581930726981765,
+   "0.54": 0.581348885641062,
+   "0.55": 0.5808552165611616,
+   "0.56": 0.5810770565633662,
+   "0.57": 0.5788542811279606,
+   "0.58": 0.5764839164462081,
+   "0.59": 0.5737557797933988,
+   "0.6": 0.5709676843781495
+  }
+ },
+ "notes": "delta_maa = variant minus final model. paired.folds_better = number of the 15 folds where the variant scored higher. Development sessions only.",
+ "seconds": 1046.7144570350647
+}

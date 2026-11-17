@@ -1,8 +1,11 @@
-numpy
-pandas
-scikit-learn
-lightgbm
-xgboost
-catboost
-matplotlib
-optuna
+# Exact versions used for the submitted run (Python 3.13.x; these pins need Python >= 3.12).
+# Other versions usually work but can change scores in the third decimal place.
+numpy==2.2.6
+pandas==2.3.3
+scipy==1.18.1
+scikit-learn==1.9.1
+lightgbm==4.7.0
+xgboost==3.4.1
+catboost==1.2.10
+optuna==5.1.0
+matplotlib==3.10.7

@@ -1,0 +1,56 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Team and contributions · Skip prediction</title><link rel="stylesheet" href="../css/base.css"><script src="../js/site.js" defer></script><script src="../js/team.js" defer></script></head>
+<body data-page="team" data-base="../../" data-sources='{"extra": "python/07_extra_experiments/results/extra_experiments.json", "dev": "python/03_tuning/results/development.json"}'>
+<main id="main">
+<p class="eyebrow">Team and contributions</p><h1 class="page-title">Who did what, and what changes if we change one thing</h1>
+<p class="section-intro">We split the coding and the writing about equally. One of us built the data and feature side, the other the model and evaluation side. The question, the evaluation plan, the interpretation and the final text were done together. Each of us can explain our own part, the choices in it, how we checked it, one limitation, and what happens if one thing is changed.</p>
+
+<h2>Split of the work</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Part of the project</th><th scope="col">Patil Nachiket Kiran (24110250)</th><th scope="col">Krish Kishor Patil (24110171)</th></tr></thead><tbody>
+<tr><td>Research question, proposal, choice of dataset</td><td colspan="2">Both, together</td></tr>
+<tr><td>Data checks and exploration (<code>python/01_data_understanding</code>, Data page)</td><td>Yes</td><td>–</td></tr>
+<tr><td>Session split, feature building, first-half rule, leakage tests (<code>python/02_preprocessing</code>, <code>shared/features.py</code>, Preprocessing page)</td><td>Yes</td><td>–</td></tr>
+<tr><td>Models, metrics and cross-validation code (<code>shared/models.py</code>, <code>shared/metrics.py</code>, <code>shared/cv.py</code>)</td><td>–</td><td>Yes</td></tr>
+<tr><td>Optuna search, repeated CV, ablation, threshold (<code>python/03_tuning</code>, Baselines and methods page)</td><td>–</td><td>Yes</td></tr>
+<tr><td>Final test and session bootstrap (<code>python/04_final_test</code>, Results page)</td><td>–</td><td>Yes</td></tr>
+<tr><td>Error analysis (<code>python/05_error_analysis</code>, Error analysis page)</td><td>Yes</td><td>–</td></tr>
+<tr><td>In-browser explorer (<code>python/06_explorer</code>, <code>whatif.js</code>)</td><td>–</td><td>Yes</td></tr>
+<tr><td>"Change one thing" experiments (<code>python/07_extra_experiments</code>, this page)</td><td>–</td><td>Yes</td></tr>
+<tr><td>Website frame, menu and result loader (<code>site.js</code>, CSS), walkthrough notebook</td><td>Yes</td><td>–</td></tr>
+<tr><td>Evaluation plan (MAA as main score, split by session, grouped CV), first-half rule decision</td><td colspan="2">Both, together</td></tr>
+<tr><td>Reading the results, Limitations, Conclusion, README, final check of every page</td><td colspan="2">Both, together</td></tr>
+</tbody></table></div>
+
+<h2>Patil Nachiket Kiran: data, features and errors</h2>
+<p><strong>What I did.</strong> I checked the raw data, built the session split, wrote the feature code that turns the first half of a session into model inputs, wrote the leakage unit tests, did the error analysis, and built the website frame (menu, page loader, the Data, Preprocessing and Error analysis pages).</p>
+<p><strong>Key choices and why.</strong></p>
+<ul>
+<li><em>Split by session, not by row.</em> Songs of one session share the same history. A row split would put half a session in training and the other half in testing, which makes the score look better than it is.</li>
+<li><em>History = first ceil(L/2) songs.</em> This follows the challenge description, so our target matches the published task. Odd-length sessions get one more history song.</li>
+<li><em>Leave missing distances missing.</em> If a listener kept no song in the first half there is no "kept profile". Filling in a number would hide that. The boosting libraries handle missing values directly.</li>
+</ul>
+<p><strong>How I checked it.</strong> <code>validate()</code> stops the pipeline if a session is incomplete, a position is repeated or a song has no features. A unit test changes the second-half answers of a session and checks that the features stay exactly the same. For errors, I broke the test accuracy down by queue position, by how mixed the first half was, by music source and by calibration.</p>
+<p><strong>A limitation I can explain.</strong> The <code>re_*</code> features (how history songs ended) are allowed, because they come from the first half, but a song that "played to the end" was by definition not skipped. So they partly repeat the skip history in another form. They do not leak the answer, but they make "history" look like several independent signals when it is mostly one.</p>
+<p><strong>One thing changed.</strong> <span id="nk-change"></span></p>
+
+<h2>Krish Kishor Patil: models, tuning and evaluation</h2>
+<p><strong>What I did.</strong> I wrote the model, metric and cross-validation code, the Optuna search with repeated grouped cross-validation, the ablation and threshold check, the single final test with session bootstrap intervals, the in-browser explorer, and the "change one thing" script on this page.</p>
+<p><strong>Key choices and why.</strong></p>
+<ul>
+<li><em>Re-score the best five Optuna trials on three new fold splits.</em> The best trial on one split is partly lucky. Choosing on 15 folds the search never used reduces that luck.</li>
+<li><em>Tie rule of 0.001 MAA.</em> Differences that small are far below the spread between folds. When two settings tie, the smaller model wins, and among libraries LightGBM wins because its trees can be exported to the browser.</li>
+<li><em>Bootstrap over sessions, paired.</em> Songs in a session depend on each other, so resampling rows would make the intervals too narrow. Pairing (same sessions for both models) makes model differences sharper.</li>
+</ul>
+<p><strong>How I checked it.</strong> Every choice was made on development data with 15 grouped folds. The test sessions were scored once, at the end. For each comparison I report the 95% interval of the paired difference and call a model better only if the interval is above zero.</p>
+<p><strong>A limitation I can explain.</strong> The settings search is not nested: the same development sessions were used to search and to estimate the score, so the development MAA is slightly optimistic. The gap between the development and test scores (Results page) is the honest check of that.</p>
+<p><strong>One thing changed.</strong> <span id="kp-change"></span></p>
+
+<h2>Shared work</h2>
+<p>We chose the question and the dataset together and wrote the proposal together. We decided together to use MAA as the main score, to split by session, and to follow the challenge's ceil(L/2) rule (after first using floor(L/2), see the Evaluation page). We read the results together and wrote the Limitations and Conclusion pages and the README together. Both of us reviewed every page before submission.</p>
+
+<h2>If we change one thing</h2>
+<p>Each row changes exactly one thing in the final model and re-scores it on the development sessions with the same 15 folds as the final model (test sessions are never used). The script is <code>python/07_extra_experiments/run_extra.py</code>; the numbers below are read from its result file. The spread between folds of the final model is <span data-v="extra.base.std_fold_maa" data-fmt="f3"></span>, so changes smaller than that should not be read as real.</p>
+<div id="change-table"></div>
+<p id="threshold-line"></p>
+<p id="change-reading"></p>
+</main>
+</body></html>

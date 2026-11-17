@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-16T19:09:47.223262+00:00",
+  "generated_at": "2026-11-17T16:39:08.525178+00:00",
   "title": "Understanding the Music Streaming Sessions mini dataset",
   "status": "computed_from_local_data",
   "scope": {
@@ -55,14 +55,14 @@
       "row_unit": "One track play within a session",
       "rows": 167880,
       "columns": 21,
-      "size_bytes": 28918670
+      "size_bytes": 29086551
     },
     {
       "file": "tf_mini.csv",
       "row_unit": "One unique track",
       "rows": 50704,
       "columns": 30,
-      "size_bytes": 27997011
+      "size_bytes": 28047716
     }
   ],
   "join": {
@@ -2747,7 +2747,7 @@
     "libraries": {
       "pandas": "2.3.3",
       "numpy": "2.2.6",
-      "matplotlib": "3.10.9"
+      "matplotlib": "3.10.7"
     }
   }
 }

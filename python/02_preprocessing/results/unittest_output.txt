@@ -1,0 +1,10 @@
+test_average_accuracy (test_features.FeatureTests.test_average_accuracy) ... ok
+test_history_summary (test_features.FeatureTests.test_history_summary) ... ok
+test_odd_length_rounds_history_up (test_features.FeatureTests.test_odd_length_rounds_history_up) ... ok
+test_rows_cover_second_half_only (test_features.FeatureTests.test_rows_cover_second_half_only) ... ok
+test_second_half_labels_do_not_change_features (test_features.FeatureTests.test_second_half_labels_do_not_change_features) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.101s
+
+OK

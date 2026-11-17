@@ -4,7 +4,7 @@
 (() => {
   const PAGES = [['index.html', 'Home', 'Overview'], ['proposal', 'Project proposal', 'Overview'], ['question', 'Question and problem', 'Problem and data'], ['data', 'Data', 'Problem and data'],
     ['preprocessing', 'Preprocessing', 'Problem and data'], ['methods', 'Baselines and methods', 'Method'], ['evaluation', 'Evaluation', 'Method'], ['results', 'Results and explorer', 'Evidence'],
-    ['errors', 'Error analysis', 'Evidence'], ['limitations', 'Limitations', 'Evidence'], ['conclusion', 'Conclusion', 'Evidence'], ['reproduction', 'Reproduction, repository and credits', 'Submission']];
+    ['errors', 'Error analysis', 'Evidence'], ['limitations', 'Limitations', 'Evidence'], ['conclusion', 'Conclusion', 'Evidence'], ['team', 'Team and contributions', 'Submission'], ['reproduction', 'Reproduction, repository and credits', 'Submission']];
   const body = document.body, BASE = body.dataset.base || '', PAGE = body.dataset.page;
   const href = s => s === 'index.html' ? BASE + 'index.html' : (BASE === '' ? 'website/html/' : '') + s + '.html';
 
@@ -80,8 +80,8 @@
 
   function derive(d) {
     const out = {};
-    if (d.dev) { const c = d.dev.threshold_curve; out.threshold_gain = Math.max(...Object.values(c)) - c['0.5']; out.best_threshold = Object.keys(c).reduce((a, b) => c[a] >= c[b] ? a : b); }
-    if (d.final) { const t = d.final.primary_tuned; out.ci_half = (t.ci.high - t.ci.low) / 2; out.gain = d.final.comparisons_vs_primary_tuned.copy_last.difference; }
+    if (d.dev) { const c = d.dev.threshold_curve; out.threshold_gain = Math.max(...Object.values(c)) - c['0.5']; out.best_threshold = Object.keys(c).reduce((a, b) => c[a] >= c[b] ? a : b); out.thr_048 = c['0.48'] - c['0.5']; out.thr_052 = c['0.52'] - c['0.5']; }
+    if (d.final) { const t = d.final.primary_tuned; out.ci_half = (t.ci.high - t.ci.low) / 2; out.gain = d.final.comparisons_vs_primary_tuned.copy_last.difference; const p = d.final.test_skip_rate; out.f1_all_skip = 2 * p / (1 + p); }
     if (d.dev && d.final) { out.dev_primary = d.dev.selected[d.final.primary].mean_fold_maa; out.dev_minus_test = out.dev_primary - d.final.primary_tuned.maa; }
     if (d.final) { const m = ['lightgbm', 'xgboost', 'catboost'].map(i => d.final.rows.find(x => x.id === i).maa); out.lib_min = Math.min(...m); out.lib_max = Math.max(...m); out.lib_spread = out.lib_max - out.lib_min; }
     if (d.dev) { const a = {}; d.dev.ablation.forEach(x => { a[x.groups] = x; }); out.ab = a; out.delta_S = a.PHS.mean_fold_maa - a.PH.mean_fold_maa; out.delta_A = a.PHA.mean_fold_maa - a.PH.mean_fold_maa; out.fold_sd = a.PH.std_fold_maa; }
